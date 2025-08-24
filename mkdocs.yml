@@ -82,6 +82,7 @@ nav:
                   - md/astar.md
         - Машинное обучение:
                   - md/bidirectional_a_star.md
+                  - md/moe.md
                   - md/sac_rnd.md
                   - md/automatic_differentiation.md
                   - md/batch_updates.md
