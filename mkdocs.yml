@@ -125,6 +125,7 @@ nav:
         - Физическое моделирование:
                   - md/automatic_differentiation.md
         - Экономика и финансы:
+                  - md/amm.md
                   - md/sac_rnd.md
                   - md/check_cycle.md
                   - md/deep_q_networks.md
@@ -135,6 +136,7 @@ nav:
                   - md/apriori_algorithm.md
                   - md/fp_growth.md
                   - md/data_transformations.md
+                  - md/uma.md
         - Другое:
                   - index.md
                   - md/merkle_tree.md
