@@ -4,167 +4,184 @@ site_description: Сайт про всякие алгоритмы.
 site_author: Igor Gorschal
 repo_url: https://github.com/neegor/algobook
 theme:
-        name: material
-        locale: ru
-        logo: assets/logo.svg
-        favicon: assets/favicon.png
-        font:
-                text: Roboto
-                code: Roboto Mono
+  name: material
+  locale: ru
+  logo: assets/logo.svg
+  favicon: assets/favicon.png
+  font:
+    text: Roboto
+    code: Roboto Mono
 
-        features:
-                - content.code.copy
-                - content.code.select
-                - content.code.annotate
-                - navigation.instant
-                - navigation.path
-        palette:
-                - media: "(prefers-color-scheme)"
-                  toggle:
-                          icon: material/brightness-auto
-                          name: Switch to light mode
-                - media: "(prefers-color-scheme: light)"
-                  scheme: default
-                  toggle:
-                          icon: material/brightness-7
-                          name: Switch to dark mode
-                - media: "(prefers-color-scheme: dark)"
-                  scheme: slate
-                  toggle:
-                          icon: material/brightness-4
-                          name: Switch to system preference
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - navigation.instant
+    - navigation.path
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
 
 nav:
-        - IoT-системы:
-                  - md/batch_updates.md
-        - Автономные транспортные средства:
-                  - md/deep_q_networks.md
-                  - md/rnd.md
-        - Базы данных:
-                  - md/check_cycle.md
-                  - md/batch_updates.md
-        - Биотехнологии и медицина:
-                  - md/bidirectional_a_star.md
-                  - md/even_tree.md
-                  - md/linucb.md
-                  - md/sac_rnd.md
-                  - md/check_cycle.md
-                  - md/deep_q_networks.md
-                  - md/1ddp.md
-                  - md/rnd.md
-                  - md/apriori_algorithm.md
-                  - md/fp_growth.md
-                  - md/data_transformations.md
-        - Веб-аналитика:
-                  - md/apriori_algorithm.md
-                  - md/fp_growth.md
-        - ГИС и картография:
-                  - md/jump_point_search.md
-        - Графы:
-                  - md/bidirectional_a_star.md
-        - Игровая разработка:
-                  - md/jump_point_search.md
-                  - md/sac_rnd.md
-                  - md/deep_q_networks.md
-                  - md/rnd.md
-                  - md/astar.md
-        - Компьютерное зрение:
-                  - md/1ddp.md
-                  - md/data_transformations.md
-        - Компьютерные науки:
-                  - md/even_tree.md
-                  - md/check_cycle.md
-        - Логистика:
-                  - md/jump_point_search.md
-                  - md/even_tree.md
-                  - md/1ddp.md
-                  - md/batch_updates.md
-                  - md/astar.md
-        - Машинное обучение:
-                  - md/bidirectional_a_star.md
-                  - md/moe.md
-                  - md/sac_rnd.md
-                  - md/automatic_differentiation.md
-                  - md/batch_updates.md
-                  - md/rnd.md
-                  - md/astar.md
-        - Научные вычисления:
-                  - md/sac_rnd.md
-                  - md/automatic_differentiation.md
-                  - md/rnd.md
-        - Обработка текста:
-                  - md/bidirectional_a_star.md
-                  - md/1ddp.md
-                  - md/data_transformations.md
-        - Патерны проектирования:
-                  - md/singleton.md
-        - Предиктивная аналитика:
-                  - md/data_transformations.md
-        - Рекомендательные системы:
-                  - md/linucb.md
-                  - md/apriori_algorithm.md
-                  - md/fp_growth.md
-        - Робототехника:
-                  - md/jump_point_search.md
-                  - md/sac_rnd.md
-                  - md/deep_q_networks.md
-                  - md/automatic_differentiation.md
-                  - md/rnd.md
-                  - md/astar.md
-        - Сетевые технологии:
-                  - md/bidirectional_a_star.md
-                  - md/even_tree.md
-        - Социальные сети:
-                  - md/even_tree.md
-                  - md/linucb.md
-                  - md/check_cycle.md
-        - Торговля:
-                  - md/linucb.md
-                  - md/apriori_algorithm.md
-                  - md/fp_growth.md
-        - Физическое моделирование:
-                  - md/automatic_differentiation.md
-        - Экономика и финансы:
-                  - md/amm.md
-                  - md/sac_rnd.md
-                  - md/check_cycle.md
-                  - md/deep_q_networks.md
-                  - md/automatic_differentiation.md
-                  - md/1ddp.md
-                  - md/batch_updates.md
-                  - md/rnd.md
-                  - md/apriori_algorithm.md
-                  - md/fp_growth.md
-                  - md/data_transformations.md
-                  - md/uma.md
-        - Другое:
-                  - index.md
-                  - md/merkle_tree.md
-                  - md/policy_gradient.md
-                  - md/merkle_patricia_trie.md
-                  - md/diophantine_equation.md
-                  - md/equated_monthly_installments.md
+  - IoT-системы:
+      - md/batch_updates.md
+  - Автономные транспортные средства:
+      - md/deep_q_networks.md
+      - md/rnd.md
+  - Базы данных:
+      - md/check_cycle.md
+      - md/batch_updates.md
+  - Биотехнологии и медицина:
+      - md/bidirectional_a_star.md
+      - md/even_tree.md
+      - md/linucb.md
+      - md/sac_rnd.md
+      - md/check_cycle.md
+      - md/deep_q_networks.md
+      - md/1ddp.md
+      - md/rnd.md
+      - md/apriori_algorithm.md
+      - md/markov_chain.md
+      - md/fp_growth.md
+      - md/data_transformations.md
+  - Веб-аналитика:
+      - md/apriori_algorithm.md
+      - md/fp_growth.md
+  - ГИС и картография:
+      - md/jump_point_search.md
+  - Графы:
+      - md/bidirectional_a_star.md
+  - Игровая разработка:
+      - md/jump_point_search.md
+      - md/sac_rnd.md
+      - md/deep_q_networks.md
+      - md/rnd.md
+      - md/markov_chain.md
+      - md/astar.md
+  - Компьютерное зрение:
+      - md/1ddp.md
+      - md/data_transformations.md
+  - Компьютерные науки:
+      - md/even_tree.md
+      - md/check_cycle.md
+  - Логистика:
+      - md/jump_point_search.md
+      - md/even_tree.md
+      - md/1ddp.md
+      - md/batch_updates.md
+      - md/astar.md
+  - Машинное обучение:
+      - md/bidirectional_a_star.md
+      - md/moe.md
+      - md/sac_rnd.md
+      - md/automatic_differentiation.md
+      - md/batch_updates.md
+      - md/rnd.md
+      - md/markov_chain.md
+      - md/astar.md
+  - Научные вычисления:
+      - md/sac_rnd.md
+      - md/automatic_differentiation.md
+      - md/rnd.md
+  - Обработка текста:
+      - md/bidirectional_a_star.md
+      - md/1ddp.md
+      - md/data_transformations.md
+  - Патерны проектирования:
+      - md/proxy.md
+      - md/abstract_factory.md
+      - md/builder.md
+      - md/bridge.md
+      - md/flyweight.md
+      - md/factory_method.md
+      - md/singleton.md
+      - md/adapter.md
+      - md/prototype.md
+      - md/decorator.md
+      - md/cqrs.md
+      - md/composite.md
+      - md/facade.md
+  - Предиктивная аналитика:
+      - md/data_transformations.md
+  - Рекомендательные системы:
+      - md/linucb.md
+      - md/apriori_algorithm.md
+      - md/fp_growth.md
+  - Робототехника:
+      - md/jump_point_search.md
+      - md/sac_rnd.md
+      - md/deep_q_networks.md
+      - md/automatic_differentiation.md
+      - md/rnd.md
+      - md/astar.md
+  - Сетевые технологии:
+      - md/bidirectional_a_star.md
+      - md/even_tree.md
+  - Социальные сети:
+      - md/even_tree.md
+      - md/linucb.md
+      - md/check_cycle.md
+  - Торговля:
+      - md/linucb.md
+      - md/apriori_algorithm.md
+      - md/fp_growth.md
+  - Физическое моделирование:
+      - md/automatic_differentiation.md
+  - Экономика и финансы:
+      - md/amm.md
+      - md/sac_rnd.md
+      - md/check_cycle.md
+      - md/deep_q_networks.md
+      - md/automatic_differentiation.md
+      - md/1ddp.md
+      - md/batch_updates.md
+      - md/rnd.md
+      - md/apriori_algorithm.md
+      - md/markov_chain.md
+      - md/fp_growth.md
+      - md/data_transformations.md
+      - md/uma.md
+  - Другое:
+      - index.md
+      - md/merkle_tree.md
+      - md/policy_gradient.md
+      - md/merkle_patricia_trie.md
+      - md/diophantine_equation.md
+      - md/equated_monthly_installments.md
+      - md/thompson_sampling.md
 
 markdown_extensions:
-        - pymdownx.arithmatex:
-                  generic: true
-        - pymdownx.highlight:
-                  anchor_linenums: true
-                  line_spans: __span
-                  pygments_lang_class: true
-        - pymdownx.inlinehilite
-        - pymdownx.snippets
-        - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 extra_javascript:
-        - assets/katex.js
-        - https://unpkg.com/katex@0/dist/katex.min.js
-        - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+  - assets/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
 
 extra_css:
-        - https://unpkg.com/katex@0/dist/katex.min.css
+  - https://unpkg.com/katex@0/dist/katex.min.css
 
 plugins:
-        - meta
-        - search:
-                  lang: ru
+  - meta
+  - search:
+      lang: ru
