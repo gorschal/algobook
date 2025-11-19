@@ -1,4 +1,4 @@
-#  Algobook
+#  algobook
 
 <img src="https://img.shields.io/badge/-Material for MkDocs-526CFE?style=flat&logo=materialformkdocs&logoColor=white"/>
 
