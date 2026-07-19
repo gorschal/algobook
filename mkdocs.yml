@@ -183,5 +183,6 @@ extra_css:
 
 plugins:
   - meta
+  - tags
   - search:
       lang: ru
