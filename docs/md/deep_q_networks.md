@@ -1,191 +1,223 @@
 ---
+title: Deep Q-Networks (DQN)
+description: Алгоритм обучения с подкреплением, использующий глубокие нейронные сети для аппроксимации функции ценности действий.
+date: 2026-07-25
 tags:
-  [
-    Игровая разработка,
-    Робототехника,
-    Экономика и финансы,
-    Биотехнологии и медицина,
-    Автономные транспортные средства,
-  ]
+  - "Машинное обучение и рекомендательные системы"
+  - "Торговля и коммерция"
+  - "Игровая разработка"
 ---
 
 # Deep Q-Networks (DQN)
 
-**Deep Q-Networks (DQN)** — это гибрид глубокого обучения и Q-learning, который стал прорывом в применении RL для рекомендательных систем. Давайте разберём его принципы, архитектуру и реализацию на практике.
+**Deep Q-Networks (DQN)** — это алгоритм обучения с подкреплением (Reinforcement Learning), который объединяет метод Q-learning с глубокими нейронными сетями для аппроксимации функции ценности действий в пространствах высокой размерности.
 
-## Основные бласти применения
+## Подробное описание
 
-1. Игровая разработка (обучение агентов для игры в Atari, Go и другие игры)
-2. Робототехника (управление движениями и принятие решений в автономных роботах)
-3. Экономика и финансы (алгоритмическая торговля и управление портфелем)
-4. Биотехнологии и медицина (оптимизация стратегий лечения и диагностики)
-5. Автономные транспортные средства (планирование маршрутов и принятие решений в реальном времени)
+Классический Q-learning использует таблицу (Q-table) для хранения значений полезности каждого действия в каждом состоянии. Этот подход становится невозможным, когда количество состояний огромно или непрерывно (например, пиксели экрана игры или векторные представления пользователей).
 
-## 1. Что такое Deep Q-Networks (DQN)?
+DQN решает эту проблему, заменяя таблицу нейронной сетью, которая принимает на вход состояние $s$ и предсказывает Q-значения для всех возможных действий. Алгоритм стал прорывом в 2015 году, когда агент на базе DQN научился играть в игры Atari на уровне человека, используя только сырые пиксели экрана.
 
-DQN — это метод **обучения с подкреплением (RL)**, который использует нейронную сеть для аппроксимации **Q-функции** (функции ценности действий).
+В контексте рекомендательных систем DQN позволяет учитывать долгосрочную удовлетворенность пользователя, а не только мгновенный клик, моделируя взаимодействие как последовательный процесс принятия решений.
 
-### Ключевые идеи
+## Основные принципы
 
-- $ Q-learning$ → Оценка "полезности" действия в состоянии:
+### Математическая формулировка
 
-  $$ Q(s, a) = \mathbb{E}[r + \gamma \max_{a'} Q(s', a')] $$
+Цель алгоритма — найти оптимальную политику $\pi$, максимизирующую ожидаемую сумму дисконтированных наград. Функция ценности действия $Q(s, a)$ оценивает, насколько выгодно выполнить действие $a$ в состоянии $s$.
 
-  где:
+Обновление весов сети происходит путем минимизации ошибки между предсказанным Q-значением и целевым значением (Target):
 
-  - $ s $ — текущее состояние,
-  - $ a $ — действие (рекомендация),
-  - $ r $ — награда (клик, покупка),
-  - $ \gamma $ — коэффициент дисконтирования.
+$$
+L(\theta) = \mathbb{E}_{(s,a,r,s') \sim U(D)} \left[ \left( r + \gamma \max_{a'} Q(s', a'; \theta^-) - Q(s, a; \theta) \right)^2 \right]
+$$
 
-- **Нейросеть вместо таблицы Q-values** → Позволяет работать с большими пространствами состояний (например, история просмотров пользователя).
+Где:
 
-## 2. Архитектура DQN
+- $\theta$ — параметры основной нейронной сети (Online Network).
+- $\theta^-$ — параметры целевой сети (Target Network), которые обновляются реже.
+- $r$ — немедленная награда за действие.
+- $\gamma$ — коэффициент дисконтирования будущих наград ($0 < \gamma \le 1$).
+- $U(D)$ — равномерная выборка из буфера воспроизведения опыта (Experience Replay Buffer).
 
-### Основные компоненты
+### Ключевые механизмы стабилизации
 
-1. **Входной слой** → Вектор состояния (например, эмбеддинг пользователя + история действий).
-2. **Скрытые слои** → Полносвязные или CNN/LSTM для обработки сложных данных.
-3. **Выходной слой** → Q-значения для каждого возможного действия (например, каждого товара в каталоге).
+1.  **Experience Replay (Буфер воспроизведения опыта)**: Агент сохраняет переходы $(s, a, r, s')$ в буфер. При обучении выбираются случайные батчи из этого буфера. Это разрывает корреляцию между последовательными наблюдениями и делает распределение данных более стационарным.
+2.  **Target Network (Целевая сеть)**: Используется отдельная копия нейронной сети для расчета целевых значений. Её веса обновляются периодически (или плавно), что предотвращает нестабильность обучения, вызванную движущейся целью.
 
-### Два ключевых усовершенствования
+### Архитектура взаимодействия
 
-- **Experience Replay** → Буфер памяти для хранения прошлых переходов $(s, a, r, s')$. Обучение идёт на случайных батчах из буфера, чтобы избежать корреляции между последовательными состояниями.
-- **Target Network** → Отдельная сеть для стабильного расчёта целевых Q-значений (обновляется периодически).
+```mermaid
+flowchart LR
+    Env[(Среда)] -->|s| Agent[Агент DQN]
+    Agent -->|a| Env
+    Env -->|r, s'| Agent
+    Agent -->|сохранение| Buffer[(Replay Buffer)]
+    Buffer -->|выборка батча| Train[Обучение]
+    Train -->|градиент| Online[Online Net]
+    Train -->|копирование| Target[Target Net]
+    Target -->|целевые Q| Train
+    Online -->|Q| Agent
+```
 
-## 3. Пример DQN для рекомендаций
+## Пример реализации на Python
 
-### Задача
-
-Рекомендовать фильмы пользователю на основе его истории просмотров.
-
-### **Данные**
-
-- **Состояние (State)** → Эмбеддинг пользователя + последние 5 просмотренных фильмов.
-- **Действие (Action)** → Выбор одного из 10 фильмов для рекомендации.
-- **Награда (Reward)** →
-  - +1 если пользователь кликнул,
-  - +10 если посмотрел до конца,
-  - -0.1 если проигнорировал.
-
-### Код на PyTorch
+Ниже представлена упрощенная реализация агента DQN с использованием `numpy`. Для сохранения самодостаточности кода вместо сложных фреймворков глубокого обучения используется простая линейная модель с ручным расчетом градиентов (метод наименьших квадратов для демонстрации принципа обновления весов).
 
 ```python
-import torch
-import torch.nn as nn
 import numpy as np
 from collections import deque
 import random
 
-class DQN(nn.Module):
-    def __init__(self, state_dim, action_dim):
-        super(DQN, self).__init__()
-        self.fc1 = nn.Linear(state_dim, 64)
-        self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, action_dim)
+class SimpleLinearNetwork:
+    """Упрощенная нейронная сеть (линейный слой) для демонстрации."""
+    def __init__(self, input_dim, output_dim):
+        # Инициализация весов случайными значениями
+        self.weights = np.random.randn(input_dim, output_dim) * 0.1
+        self.bias = np.zeros(output_dim)
 
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        return self.fc3(x)
+    def predict(self, x):
+        """Прямой проход: x @ W + b"""
+        return np.dot(x, self.weights) + self.bias
+
+    def update(self, x, target_q, lr=0.01):
+        """Обновление весов методом градиентного спуска (MSE loss)."""
+        # Предсказание
+        q_values = self.predict(x)
+        # Ошибка
+        error = target_q - q_values
+        # Градиент по весам: dL/dW = -2 * x^T * error (упрощенно)
+        # Для одного состояния x и вектора target_q
+        gradient_w = -2 * np.outer(x, error)
+        gradient_b = -2 * error
+
+        self.weights -= lr * gradient_w
+        self.bias -= lr * gradient_b
 
 class DQNAgent:
-    def __init__(self, state_dim, action_dim):
-        self.model = DQN(state_dim, action_dim)
-        self.target_model = DQN(state_dim, action_dim)
-        self.target_model.load_state_dict(self.model.state_dict())
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
-        self.memory = deque(maxlen=10000)
-        self.gamma = 0.95
-        self.epsilon = 1.0
+    def __init__(self, state_dim, action_dim, gamma=0.95, epsilon=1.0):
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.gamma = gamma  # Коэффициент дисконтирования
+        self.epsilon = epsilon  # Вероятность случайного действия (Exploration)
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
 
+        # Основная сеть и целевая сеть
+        self.model = SimpleLinearNetwork(state_dim, action_dim)
+        self.target_model = SimpleLinearNetwork(state_dim, action_dim)
+
+        # Буфер воспроизведения опыта
+        self.memory = deque(maxlen=2000)
+        self.batch_size = 32
+
     def act(self, state):
+        """Выбор действия: Exploration vs Exploitation"""
         if np.random.rand() <= self.epsilon:
-            return np.random.randint(0, action_dim)
-        state = torch.FloatTensor(state).unsqueeze(0)
-        q_values = self.model(state)
-        return torch.argmax(q_values).item()
+            return np.random.randint(self.action_dim)
+
+        state = np.array(state).reshape(1, -1)
+        q_values = self.model.predict(state)
+        return np.argmax(q_values[0])
 
     def remember(self, state, action, reward, next_state, done):
+        """Сохранение перехода в буфер"""
         self.memory.append((state, action, reward, next_state, done))
 
-    def replay(self, batch_size):
-        if len(self.memory) < batch_size:
+    def replay(self):
+        """Обучение на случайном батче из буфера"""
+        if len(self.memory) < self.batch_size:
             return
-        batch = random.sample(self.memory, batch_size)
-        states, actions, rewards, next_states, dones = zip(*batch)
 
-        states = torch.FloatTensor(np.array(states))
-        next_states = torch.FloatTensor(np.array(next_states))
-        actions = torch.LongTensor(actions)
-        rewards = torch.FloatTensor(rewards)
-        dones = torch.FloatTensor(dones)
+        batch = random.sample(self.memory, self.batch_size)
 
-        current_q = self.model(states).gather(1, actions.unsqueeze(1))
-        next_q = self.target_model(next_states).max(1)[0].detach()
-        target_q = rewards + (1 - dones) * self.gamma * next_q
+        for state, action, reward, next_state, done in batch:
+            state = np.array(state).reshape(1, -1)
+            next_state = np.array(next_state).reshape(1, -1)
 
-        loss = nn.MSELoss()(current_q.squeeze(), target_q)
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+            # Текущее предсказание
+            target_f = self.model.predict(state)
 
-        # Decay epsilon
+            # Расчет целевого значения с использованием Target Network
+            next_q_values = self.target_model.predict(next_state)
+            max_next_q = np.max(next_q_values)
+
+            target_q = reward
+            if not done:
+                target_q = reward + self.gamma * max_next_q
+
+            # Обновляем только Q-значение для выбранного действия
+            target_f[0][action] = target_q
+
+            # Обновляем веса основной сети
+            self.model.update(state[0], target_f[0])
+
+        # Уменьшение epsilon (greedy strategy)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
     def update_target_model(self):
-        self.target_model.load_state_dict(self.model.state_dict())
+        """Копирование весов из основной сети в целевую"""
+        self.target_model.weights = np.copy(self.model.weights)
+        self.target_model.bias = np.copy(self.model.bias)
 
-# Пример использования
-state_dim = 100  # Размерность эмбеддинга состояния
-action_dim = 10  # 10 возможных фильмов для рекомендации
-agent = DQNAgent(state_dim, action_dim)
+if __name__ == "__main__":
+    # Параметры среды
+    STATE_DIM = 10  # Например, размер эмбеддинга пользователя
+    ACTION_DIM = 5  # Количество рекомендуемых товаров
 
-# Цикл обучения
-for episode in range(1000):
-    state = np.random.randn(state_dim)  # Имитация состояния пользователя
-    for step in range(100):
-        action = agent.act(state)
-        next_state = np.random.randn(state_dim)  # Новое состояние
-        reward = np.random.choice([-0.1, 1, 10])  # Случайная награда
-        done = step == 99
-        agent.remember(state, action, reward, next_state, done)
-        state = next_state
-        agent.replay(32)  # Обучение на батче из 32 примеров
-    if episode % 10 == 0:
-        agent.update_target_model()
+    agent = DQNAgent(STATE_DIM, ACTION_DIM)
+
+    print("Начало обучения агента DQN...")
+
+    # Симуляция эпизодов
+    for episode in range(100):
+        state = np.random.randn(STATE_DIM)
+        total_reward = 0
+
+        for step in range(20):
+            action = agent.act(state)
+
+            # Симуляция среды: случайное следующее состояние и награда
+            next_state = np.random.randn(STATE_DIM)
+            reward = np.random.choice([-1, 0, 1, 5]) # Клик, игнор, покупка
+            done = False
+
+            agent.remember(state, action, reward, next_state, done)
+            state = next_state
+            total_reward += reward
+
+            # Обучение
+            agent.replay()
+
+        # Периодическое обновление целевой сети
+        if episode % 10 == 0:
+            agent.update_target_model()
+
+        if episode % 20 == 0:
+            print(f"Episode {episode}, Total Reward: {total_reward}, Epsilon: {agent.epsilon:.2f}")
+
+    print("Обучение завершено.")
 ```
 
----
+## Достоинства и недостатки
 
-## 4. Проблемы DQN и их решения
+**Достоинства:**
 
-### a. Переоценка Q-значений
+1. **Работа с высокоразмерными данными**: Способность обрабатывать сырые сенсорные данные (изображения, сложные векторы признаков) без ручного инжиниринга признаков.
+2. **Учет долгосрочных последствий**: В отличие от жадных алгоритмов, DQN оптимизирует суммарную награду на длинной дистанции, что критично для удержания пользователей.
+3. **Универсальность**: Одна и та же архитектура может применяться в играх, робототехнике и финансах.
 
-- **Проблема**: DQN склонен завышать оценки.
-- **Решение**: Double DQN (разделение выбора действия и оценки).
+**Недостатки:**
 
-### b. Неэффективность для больших каталогов
+1. **Вычислительная сложность**: Требует значительных ресурсов для обучения и большого объема данных для сходимости.
+2. **Нестабильность обучения**: Чувствителен к гиперпараметрам (скорость обучения, размер буфера), может расходиться без тщательной настройки.
+3. **Проблема переоценки (Overestimation Bias)**: Стандартный DQN склонен завышать Q-значения, что решается модификациями вроде Double DQN.
 
-- **Проблема**: Если действий тысячи (например, все товары Amazon), выходной слой слишком большой.
-- **Решение**:
-  - **Action Embeddings** → Сводят действия в низкоразмерное пространство.
-  - **DQN с вниманием** → Например, **DRN** (Deep Reinforcement Learning for Recommendations).
+## Области применения
 
-### c. Холодный старт
-
-- **Решение**: Предобучение на имитационных данных или гибрид с collaborative filtering.
-
-## 5. Где применяется DQN в рекомендациях?
-
-- **YouTube** (ранние версии рекомендаций).
-- **Alibaba** → Для динамического ретаргетинга товаров.
-- **Новостные агрегаторы** → Персонализация ленты.
-
-## 6. Будущее DQN
-
-- **Комбинация с трансформерами** → Например, **Decision Transformer** для рекомендаций.
-- **Мета-обучение** → Быстрая адаптация к новым пользователям.
+1. Машинное обучение и рекомендательные системы (персонализация контента с учетом долгосрочного интереса, динамические рекомендации)
+2. Игровая разработка (создание интеллектуальных NPC, тестирование баланса игр, агенты для стратегических игр)
+3. Торговля и коммерция (динамическое ценообразование, управление рекламными кампаниями в реальном времени, оптимизация корзины покупок)
+4. Робототехника и автономные системы (навигация мобильных роботов, управление манипуляторами в изменяющейся среде)
+5. Экономика и финансы (алгоритмический трейдинг, управление портфелем активов с учетом рыночных рисков)

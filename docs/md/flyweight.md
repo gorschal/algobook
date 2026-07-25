@@ -1,192 +1,176 @@
 ---
-tags: [Патерны проектирования]
+title: Паттерн Flyweight (Приспособленец)
+description: Структурный паттерн проектирования для экономии памяти путем разделения общего состояния объектов.
+date: 2026-07-25
+tags:
+  - "Паттерны проектирования"
+  - "Игровая разработка"
+  - "Обработка естественного языка"
 ---
 
 # Паттерн Flyweight (Приспособленец)
 
-Паттерн Flyweight - это структурный паттерн проектирования, который позволяет эффективно работать с большим количеством объектов, разделяя общее состояние между ними вместо хранения одинаковых данных в каждом объекте.
+Паттерн Flyweight (англ. _Flyweight_, произносится как «флайвейт») — это структурный паттерн проектирования, который позволяет вмещать больше объектов в отведенную оперативную память за счет разделения общего состояния между несколькими объектами, вместо хранения одинаковых данных в каждом из них.
 
-## Основная идея
+## Подробное описание
 
-Flyweight используется для минимизации использования памяти или вычислительных затрат путем разделения как можно большего количества данных между подобными объектами. Он особенно полезен, когда:
+Паттерн применяется, когда в приложении необходимо создать огромное количество однотипных объектов, что приводит к исчерпанию доступной памяти. Ключевая идея заключается в разделении состояния объекта на две части:
 
-- В приложении используется большое количество объектов
-- Хранение всех этих объектов требует много памяти
-- Большая часть состояния объектов может быть вынесена вовне
-- После выноса внешнего состояния многие группы объектов могут быть заменены относительно небольшим количеством разделяемых объектов
+1.  **Внутреннее состояние (intrinsic)** — данные, которые не зависят от контекста и могут быть разделены между множеством объектов (например, тип символа, текстура дерева, цвет кнопки).
+2.  **Внешнее состояние (extrinsic)** — данные, которые уникальны для каждого конкретного экземпляра и передаются объекту извне при использовании (например, координаты символа на экране, позиция дерева в мире, состояние нажатия кнопки).
 
-## Компоненты паттерна
+Flyweight-фабрика управляет пулом уже созданных объектов. Если запрашивается объект с определенным внутренним состоянием, фабрика либо возвращает существующий экземпляр, либо создает новый. Это гарантирует, что объекты с одинаковым внутренним состоянием будут представлены единственным экземпляром в памяти.
 
-- **Flyweight** - интерфейс, через который легковесные объекты могут получать внешнее состояние
-- **ConcreteFlyweight** - реализует интерфейс Flyweight и хранит внутреннее состояние (которое не зависит от контекста)
-- **UnsharedConcreteFlyweight** - не все подклассы Flyweight должны быть разделяемыми
-- **FlyweightFactory** - создает и управляет flyweight-объектами, обеспечивает правильное разделение flyweight-объектов
-- **Client** - хранит внешнее состояние и работает с flyweight-объектами
+## Основные принципы
 
-## Примеры на Python
+### Математическая оценка эффективности
 
-### Пример 1: Текстовый редактор
+Эффективность паттерна можно оценить через соотношение потребляемой памяти до и после применения оптимизации.
 
-Представим текстовый редактор, где каждый символ - это объект. Вместо создания тысячи объектов для каждого символа, мы можем использовать flyweight для разделения общих данных.
+Пусть $N$ — общее количество объектов, $K$ — количество уникальных комбинаций внутреннего состояния ($K \ll N$).
+
+Память без паттерна:
+
+$$
+M_{naive} = N \times (S_{intrinsic} + S_{extrinsic})
+$$
+
+Память с паттерном Flyweight:
+
+$$
+M_{flyweight} = K \times S_{intrinsic} + N \times S_{extrinsic} + S_{factory}
+$$
+
+Где:
+
+- $S_{intrinsic}$ — размер внутреннего состояния (разделяемого).
+- $S_{extrinsic}$ — размер внешнего состояния (уникального).
+- $S_{factory}$ — накладные расходы на хранение фабрики и ссылок.
+
+Выгода достигается, когда $N \times S_{intrinsic} \gg K \times S_{intrinsic} + S_{factory}$.
+
+### Блок-схема взаимодействия
+
+```mermaid
+sequenceDiagram
+    participant Client as Клиент
+    participant Factory as FlyweightFactory
+    participant Flyweight as ConcreteFlyweight
+
+    Client->>Factory: getFlyweight(key)
+    alt Объект существует в пуле
+        Factory-->>Client: Вернуть существующий объект
+    else Объекта нет в пуле
+        Factory->>Flyweight: Создать новый объект
+        Flyweight-->>Factory: Новый объект
+        Factory-->>Client: Вернуть новый объект
+    end
+    Client->>Flyweight: operation(extrinsicState)
+```
+
+## Пример реализации на Python
+
+Рассмотрим реализацию текстового редактора. Вместо создания отдельного объекта для каждой буквы «а» в документе (которых могут быть тысячи), мы создаем один разделяемый объект для символа «а», хранящий его шрифт и начертание (внутреннее состояние). Координаты и цвет конкретной буквы передаются при отрисовке (внешнее состояние).
 
 ```python
 import weakref
+from typing import Dict, Tuple
 
 class CharacterFlyweight:
-    _pool = weakref.WeakValueDictionary()
+    """
+    Легковесный объект, хранящий внутреннее состояние символа.
+    """
+    def __init__(self, char: str, font: str, size: int):
+        self.char = char      # Внутреннее состояние
+        self.font = font      # Внутреннее состояние
+        self.size = size      # Внутреннее состояние
 
-    def __new__(cls, char):
-        # Если символ уже есть в пуле, возвращаем его
-        obj = cls._pool.get(char)
-        if obj is None:
-            obj = super().__new__(cls)
-            cls._pool[char] = obj
-            obj.char = char
-        return obj
+    def render(self, x: int, y: int, color: str):
+        """
+        Отрисовка символа. Координаты и цвет - внешнее состояние.
+        """
+        print(f"Отрисовка '{self.char}' [Шрифт: {self.font}, Размер: {self.size}] "
+              f"в позиции ({x}, {y}) цветом {color}")
 
-    def render(self, font, size):
-        print(f"Символ '{self.char}' с шрифтом {font} и размером {size}")
-
-class TextEditor:
-    def __init__(self):
-        self.chars = []
-
-    def add_char(self, char, font, size):
-        flyweight = CharacterFlyweight(char)
-        self.chars.append((flyweight, font, size))
-
-    def render(self):
-        for flyweight, font, size in self.chars:
-            flyweight.render(font, size)
-
-# Использование
-editor = TextEditor()
-editor.add_char('H', 'Arial', 12)
-editor.add_char('e', 'Arial', 12)
-editor.add_char('l', 'Times New Roman', 14)
-editor.add_char('l', 'Times New Roman', 14)
-editor.add_char('o', 'Arial', 12)
-
-editor.render()
-```
-
-### Пример 2: Игра с деревьями
-
-В игре может быть множество деревьев с одинаковыми текстурами, но разными позициями.
-
-```python
-class TreeType:
-    def __init__(self, name, color, texture):
-        self.name = name
-        self.color = color
-        self.texture = texture
-
-    def draw(self, x, y):
-        print(f"Рисуем дерево {self.name} цвета {self.color} в позиции ({x}, {y})")
-
-class TreeFactory:
-    tree_types = {}
+class CharacterFactory:
+    """
+    Фабрика для управления пулом flyweight-объектов.
+    Использует WeakValueDictionary, чтобы объекты удалялись сборщиком мусора,
+    если на них больше нет ссылок вне фабрики (опционально для долгосрочных приложений).
+    """
+    _pool: Dict[Tuple[str, str, int], CharacterFlyweight] = {}
 
     @classmethod
-    def get_tree_type(cls, name, color, texture):
-        key = (name, color, texture)
-        if key not in cls.tree_types:
-            cls.tree_types[key] = TreeType(name, color, texture)
-        return cls.tree_types[key]
+    def get_character(cls, char: str, font: str, size: int) -> CharacterFlyweight:
+        key = (char, font, size)
 
-class Tree:
-    def __init__(self, x, y, tree_type):
-        self.x = x
-        self.y = y
-        self.type = tree_type
-
-    def draw(self):
-        self.type.draw(self.x, self.y)
-
-class Forest:
-    def __init__(self):
-        self.trees = []
-
-    def plant_tree(self, x, y, name, color, texture):
-        tree_type = TreeFactory.get_tree_type(name, color, texture)
-        tree = Tree(x, y, tree_type)
-        self.trees.append(tree)
-
-    def draw(self):
-        for tree in self.trees:
-            tree.draw()
-
-# Использование
-forest = Forest()
-forest.plant_tree(1, 2, "Дуб", "зеленый", "текстура_дуба.png")
-forest.plant_tree(3, 4, "Дуб", "зеленый", "текстура_дуба.png")
-forest.plant_tree(5, 6, "Береза", "белый", "текстура_березы.png")
-
-forest.draw()
-```
-
-### Пример 3: Форматирование текста
-
-```python
-class TextStyleFlyweight:
-    _pool = {}
-
-    def __new__(cls, font, size, color):
-        key = (font, size, color)
         if key not in cls._pool:
-            cls._pool[key] = super().__new__(cls)
-            cls._pool[key].font = font
-            cls._pool[key].size = size
-            cls._pool[key].color = color
+            cls._pool[key] = CharacterFlyweight(char, font, size)
+
         return cls._pool[key]
 
-    def apply_style(self, text):
-        print(f"Текст: '{text}' | Шрифт: {self.font}, Размер: {self.size}, Цвет: {self.color}")
+    @classmethod
+    def get_pool_size(cls) -> int:
+        return len(cls._pool)
 
-class FormattedText:
+class TextEditor:
+    """
+    Клиентский код, хранящий внешний контекст (позиции символов).
+    """
     def __init__(self):
-        self.text = []
-        self.styles = []
+        self.characters: list[Tuple[CharacterFlyweight, int, int, str]] = []
 
-    def add_text(self, text, font=None, size=None, color=None):
-        self.text.append(text)
-        if font or size or color:
-            style = TextStyleFlyweight(font or "Arial", size or 12, color or "black")
-            self.styles.append((len(self.text)-1, style))
+    def add_character(self, char: str, font: str, size: int, x: int, y: int, color: str):
+        # Получаем разделяемый объект из фабрики
+        flyweight = CharacterFactory.get_character(char, font, size)
+        # Сохраняем ссылку на flyweight вместе с внешним состоянием
+        self.characters.append((flyweight, x, y, color))
+
+    def render(self):
+        for flyweight, x, y, color in self.characters:
+            flyweight.render(x, y, color)
+
+if __name__ == "__main__":
+    editor = TextEditor()
+
+    # Добавляем много текста с повторяющимися стилями
+    text_content = "Hello World! Hello Python!"
+    x_pos = 0
+
+    for char in text_content:
+        if char.isupper():
+            font, size, color = "Arial Bold", 14, "red"
+        elif char == ' ':
+            font, size, color = "Arial", 12, "white" # Пробел тоже объект, но невидимый
         else:
-            self.styles.append((len(self.text)-1, None))
+            font, size, color = "Arial", 12, "black"
 
-    def display(self):
-        for i, text in enumerate(self.text):
-            for pos, style in self.styles:
-                if pos == i and style:
-                    style.apply_style(text)
-                    break
-            else:
-                print(f"Текст: '{text}' | (стандартное форматирование)")
+        editor.add_character(char, font, size, x_pos, 10, color)
+        x_pos += 10
 
-# Использование
-doc = FormattedText()
-doc.add_text("Привет, ", "Times New Roman", 14, "red")
-doc.add_text("мир!", "Arial", 16, "blue")
-doc.add_text(" Это обычный текст.")
-doc.add_text(" А это снова стилизованный", "Courier New", 12, "green")
+    print(f"Всего символов в тексте: {len(text_content)}")
+    print(f"Уникальных объектов Flyweight в памяти: {CharacterFactory.get_pool_size()}")
+    print("-" * 30)
 
-doc.display()
+    editor.render()
 ```
 
-## Преимущества и недостатки
+## Достоинства и недостатки
 
-**Преимущества:**
+**Достоинства:**
 
-- Экономит память за счет разделения общего состояния
-- Уменьшает количество создаваемых объектов
-- Упрощает работу с большим количеством объектов
+1.  **Экономия памяти.** Значительное снижение потребления RAM при работе с большими наборами однотипных данных.
+2.  **Производительность.** Ускорение инициализации, так как объекты не создаются каждый раз заново, а берутся из кэша.
+3.  **Централизованное управление.** Изменение внутреннего состояния (например, глобальная замена шрифта) происходит в одном месте для всех связанных объектов.
 
-**Нестановки:**
+**Недостатки:**
 
-- Может увеличить сложность кода
-- Требует тщательного разделения внутреннего и внешнего состояния
-- Может привести к проблемам с многопоточностью, если flyweight-объекты изменяемы
+1.  **Усложнение кода.** Необходимо четко разделять внутреннее и внешнее состояние, что увеличивает сложность архитектуры.
+2.  **Накладные расходы на вычисление хэшей.** Поиск объектов в фабрике требует времени, хотя обычно оно компенсируется экономией на создании объектов.
+3.  **Проблемы с многопоточностью.** Если разделяемые объекты изменяемы, требуется синхронизация доступа, что может снизить производительность. Рекомендуется делать Flyweight-объекты неизменяемыми (immutable).
 
-Flyweight особенно полезен в графических редакторах, играх, текстовых процессорах и других приложениях, где требуется работать с большим количеством похожих объектов.
+## Области применения
+
+1.  Паттерны проектирования (реализация эффективных структур данных, кэширование)
+2.  Игровая разработка (отрисовка тысяч деревьев, травы, камней с одинаковыми текстурами но разными координатами)
+3.  Обработка естественного языка (хранение словаря слов в текстовых процессорах, где каждое слово — объект с общим форматированием)

@@ -35,132 +35,113 @@ theme:
         name: Switch to system preference
 
 nav:
-  - IoT-системы:
+  - IoT и сетевые технологии:
       - md/batch_updates.md
-  - Автономные транспортные средства:
-      - md/deep_q_networks.md
-      - md/rnd.md
-  - Базы данных:
-      - md/check_cycle.md
-      - md/batch_updates.md
-  - Биотехнологии и медицина:
-      - md/bidirectional_a_star.md
       - md/even_tree.md
-      - md/linucb.md
-      - md/sac_rnd.md
+  - Аналитика данных и базы данных:
+      - md/fp_growth.md
+      - md/apriori_algorithm.md
+      - md/merkle_tree.md
       - md/check_cycle.md
-      - md/deep_q_networks.md
-      - md/1ddp.md
-      - md/rnd.md
-      - md/apriori_algorithm.md
-      - md/markov_chain.md
-      - md/fp_growth.md
       - md/data_transformations.md
-  - Веб-аналитика:
-      - md/apriori_algorithm.md
-      - md/fp_growth.md
+      - md/facade.md
+      - md/cqrs.md
+      - md/batch_updates.md
+      - md/merkle_patricia_trie.md
+  - Биотехнологии и медицинская информатика:
+      - md/linucb.md
+      - md/multidimensional_dp.md
+      - md/1ddp.md
   - ГИС и картография:
       - md/jump_point_search.md
-  - Графы:
+  - Графовые модели и социальные сети:
+      - md/check_cycle.md
       - md/bidirectional_a_star.md
+      - md/even_tree.md
   - Игровая разработка:
       - md/jump_point_search.md
       - md/sac_rnd.md
       - md/deep_q_networks.md
-      - md/rnd.md
-      - md/markov_chain.md
-      - md/astar.md
-  - Компьютерное зрение:
-      - md/1ddp.md
-      - md/data_transformations.md
-  - Компьютерные науки:
-      - md/even_tree.md
-      - md/check_cycle.md
-  - Логистика:
-      - md/jump_point_search.md
-      - md/even_tree.md
-      - md/1ddp.md
-      - md/batch_updates.md
-      - md/astar.md
-  - Машинное обучение:
-      - md/bidirectional_a_star.md
-      - md/moe.md
-      - md/sac_rnd.md
-      - md/automatic_differentiation.md
-      - md/batch_updates.md
-      - md/rnd.md
-      - md/markov_chain.md
-      - md/astar.md
-  - Научные вычисления:
-      - md/sac_rnd.md
-      - md/automatic_differentiation.md
-      - md/rnd.md
-  - Обработка текста:
-      - md/bidirectional_a_star.md
-      - md/1ddp.md
-      - md/data_transformations.md
-  - Патерны проектирования:
-      - md/proxy.md
-      - md/abstract_factory.md
-      - md/builder.md
-      - md/bridge.md
       - md/flyweight.md
-      - md/factory_method.md
-      - md/singleton.md
-      - md/adapter.md
-      - md/prototype.md
-      - md/decorator.md
-      - md/cqrs.md
-      - md/composite.md
-      - md/facade.md
-  - Предиктивная аналитика:
-      - md/data_transformations.md
-  - Рекомендательные системы:
-      - md/linucb.md
-      - md/apriori_algorithm.md
-      - md/fp_growth.md
-  - Робототехника:
-      - md/jump_point_search.md
-      - md/sac_rnd.md
-      - md/deep_q_networks.md
-      - md/automatic_differentiation.md
-      - md/rnd.md
       - md/astar.md
-  - Сетевые технологии:
+      - md/prototype.md
       - md/bidirectional_a_star.md
-      - md/even_tree.md
-  - Социальные сети:
-      - md/even_tree.md
-      - md/linucb.md
-      - md/check_cycle.md
-  - Торговля:
-      - md/linucb.md
-      - md/apriori_algorithm.md
-      - md/fp_growth.md
-  - Физическое моделирование:
-      - md/automatic_differentiation.md
-  - Экономика и финансы:
-      - md/amm.md
-      - md/sac_rnd.md
-      - md/check_cycle.md
-      - md/deep_q_networks.md
-      - md/automatic_differentiation.md
+  - Логистика и управление цепочками:
+      - md/jump_point_search.md
+      - md/multidimensional_dp.md
+      - md/astar.md
       - md/1ddp.md
-      - md/batch_updates.md
-      - md/rnd.md
-      - md/apriori_algorithm.md
-      - md/markov_chain.md
+      - md/bidirectional_a_star.md
+  - Машинное обучение и рекомендательные системы:
       - md/fp_growth.md
-      - md/data_transformations.md
-      - md/uma.md
-  - Другое:
-      - index.md
-      - md/merkle_tree.md
+      - md/automatic_differentiation.md
+      - md/apriori_algorithm.md
+      - md/linucb.md
+      - md/moe.md
+      - md/rnd.md
+      - md/sac_rnd.md
+      - md/deep_q_networks.md
       - md/policy_gradient.md
-      - md/merkle_patricia_trie.md
-      - md/diophantine_equation.md
-      - md/equated_monthly_installments.md
+      - md/data_transformations.md
       - md/thompson_sampling.md
+      - md/markov_chain.md
+      - md/batch_updates.md
+      - md/1ddp.md
+  - Научные вычисления и физическое моделирование:
+      - md/automatic_differentiation.md
+      - md/diophantine_equation.md
+  - Обработка естественного языка:
+      - md/moe.md
+      - md/flyweight.md
+      - md/markov_chain.md
+      - md/1ddp.md
+  - Оптимизация и планирование:
+      - md/automatic_differentiation.md
+      - md/diophantine_equation.md
+      - md/astar.md
+      - md/check_cycle.md
+      - md/thompson_sampling.md
+      - md/batch_updates.md
+      - md/merkle_patricia_trie.md
+      - md/even_tree.md
+  - Паттерны проектирования:
+      - md/abstract_factory.md
+      - md/decorator.md
+      - md/merkle_tree.md
+      - md/factory_method.md
+      - md/flyweight.md
+      - md/singleton.md
+      - md/prototype.md
+      - md/facade.md
+      - md/composite.md
+      - md/cqrs.md
+      - md/bridge.md
+      - md/proxy.md
+      - md/builder.md
+      - md/adapter.md
+  - Робототехника и автономные системы:
+      - md/jump_point_search.md
+      - md/rnd.md
+      - md/sac_rnd.md
+      - md/astar.md
+      - md/bidirectional_a_star.md
+  - Торговля и коммерция:
+      - md/fp_growth.md
+      - md/apriori_algorithm.md
+      - md/linucb.md
+      - md/uma.md
+      - md/amm.md
+      - md/deep_q_networks.md
+      - md/policy_gradient.md
+      - md/facade.md
+      - md/thompson_sampling.md
+  - Экономика и финансы:
+      - md/uma.md
+      - md/amm.md
+      - md/equated_monthly_installments.md
+      - md/multidimensional_dp.md
+      - md/markov_chain.md
+      - md/1ddp.md
 
 markdown_extensions:
   - pymdownx.arithmatex:

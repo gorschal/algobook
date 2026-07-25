@@ -1,222 +1,235 @@
-# Policy Gradient (PG)
+---
+title: Policy Gradient (Градиент политики)
+description: Семейство алгоритмов обучения с подкреплением, оптимизирующих стратегию поведения агента напрямую через градиентный спуск.
+date: 2026-07-25
+tags:
+  - "Машинное обучение и рекомендательные системы"
+  - "Торговля и коммерция"
+---
 
-**Policy Gradient (PG)** — это семейство алгоритмов обучения с подкреплением (RL), которые **оптимизируют политику напрямую**, вместо того чтобы сначала оценивать Q-функцию (как в DQN). Это особенно полезно, когда:
+# Policy Gradient (Градиент политики)
 
-- **Пространство действий большое или непрерывное** (например, рекомендация с плавным скором).
-- **Нужна стохастическая политика** (например, для исследования новых рекомендаций).
+Policy Gradient (PG, произносится как «полиси градиент») — это семейство алгоритмов обучения с подкреплением (Reinforcement Learning), которые оптимизируют политику $\pi_\theta$ напрямую, максимизируя ожидаемую награду, вместо того чтобы оценивать функцию ценности действий (Q-функцию), как это делается в методах вроде DQN.
 
-## 1. Основная идея Policy Gradient
+Этот подход особенно эффективен в задачах с непрерывным пространством действий или там, где требуется стохастическая (вероятностная) стратегия поведения, например, в системах персонализированных рекомендаций.
 
-### Чем отличается от DQN?
+## Подробное описание
 
-| **Аспект**         | **DQN**                            | **Policy Gradient (PG)**          |
-| ------------------ | ---------------------------------- | --------------------------------- |
-| **Что обучается?** | Q-функция (ценность действий)      | Политика $\pi(a \| s)$ напрямую   |
-| **Тип политики**   | Жёсткая (greedy/$\epsilon$-жадная) | Стохастическая (вероятностная)    |
-| **Подходит для**   | Дискретные действия                | Дискретные и непрерывные действия |
-| **Примеры**        | Deep Q-Learning                    | REINFORCE, Actor-Critic, PPO      |
+### Постановка задачи
 
-### Формула градиента политики
+В классическом обучении с подкреплением агент взаимодействует со средой, находясь в состоянии $s$, выбирая действие $a$ и получая награду $r$. Цель агента — найти такую политику $\pi(a|s)$ (вероятность выбора действия $a$ в состоянии $s$), которая максимизирует суммарную дисконтированную награду за эпизод.
 
-Цель — максимизировать **ожидаемую награду** \( J(\theta) \):
+### Ключевая идея
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta} \left[ \nabla_\theta \log \pi_\theta(a|s) \cdot Q^\pi(s, a) \right]$$
+В отличие от value-based методов (например, Q-Learning), которые сначала учатся оценивать «полезность» каждого действия, а затем выбирают лучшее, методы Policy Gradient параметризуют саму политику нейронной сетью или другой функцией с параметрами $\theta$. Алгоритм вычисляет градиент ожидаемой награды по этим параметрам и делает шаг в направлении его увеличения.
 
-где:
+### Исторический контекст
 
-- $ \pi\_\theta(a|s) $ — вероятность выбора действия $ a $ в состоянии $ s $,
-- $ Q^\pi(s, a) $ — ценность действия (можно аппроксимировать).
+Метод был формализован в работе Sutton et al. (2000) как алгоритм REINFORCE. Позже развитие получили гибридные методы Actor-Critic, сочетающие оценку ценности (Critic) и оптимизацию политики (Actor), а также современные алгоритмы PPO и TRPO, решающие проблему нестабильности обучения.
 
-## 2. Алгоритмы Policy Gradient
+## Основные принципы
 
-### a) REINFORCE (Monte Carlo PG)
+### Математическая формулировка
 
-- Оценивает **полный возврат (return)** за эпизод.
-- Прост в реализации, но имеет **высокую дисперсию**.
+Целью является максимизация функции цели $J(\theta)$, представляющей собой ожидаемую сумму наград:
 
-### b) Actor-Critic
+$$
+J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} [R(\tau)]
+$$
 
-- **Актор (Actor)** — выбирает действия (политика).
-- **Критик (Critic)** — оценивает $ Q(s, a) $ или $ V(s) $.
-- Снижает дисперсию по сравнению с REINFORCE.
+Где $\tau$ — траектория (последовательность состояний и действий), а $R(\tau)$ — сумма наград вдоль этой траектории.
 
-### c) PPO (Proximal Policy Optimization)
+Градиент этой функции вычисляется по теореме о логарифмической вероятности (Policy Gradient Theorem):
 
-- Современный алгоритм, который **ограничивает изменение политики** для стабильности.
+$$
+\nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta} \left[ \nabla_\theta \log \pi_\theta(a|s) \cdot Q^{\pi_\theta}(s, a) \right]
+$$
 
-## 3. Пример: REINFORCE для рекомендаций
+Где:
 
-### Задача
+- $\pi_\theta(a|s)$ — вероятность выбора действия $a$ в состоянии $s$ при текущих параметрах $\theta$.
+- $Q^{\pi_\theta}(s, a)$ — оценка качества действия (ожидаемая будущая награда).
+- $\nabla_\theta \log \pi_\theta(a|s)$ — направление, в котором нужно изменить параметры, чтобы увеличить вероятность выбранного действия.
 
-Рекомендовать один из 5 товаров пользователю на основе его истории.
+На практике $Q(s,a)$ часто заменяют на дисконтированный возврат $G_t$ или используют разницу между фактической наградой и базовой линией (baseline), чтобы снизить дисперсию оценки.
 
-### Код на PyTorch
+### Блок-схема алгоритма REINFORCE
+
+```mermaid
+flowchart TD
+    A[Инициализация параметров theta] --> B[Сгенерировать эпизод по политике pi_theta]
+    B --> C[Для каждого шага t рассчитать возврат G_t]
+    C --> D[Вычислить градиент: grad_J = sum grad_log_pi * G_t]
+    D --> E[Обновить параметры: theta = theta + alpha * grad_J]
+    E --> F{Достигнут лимит эпизодов?}
+    F -->|Нет| B
+    F -->|Да| G[Конец обучения]
+```
+
+## Пример реализации на Python
+
+Ниже представлен пример реализации алгоритма REINFORCE с базовой линией (для снижения дисперсии) для простой задачи выбора рекомендации. Для соблюдения требований стандарта используется только стандартная библиотека Python и `math`.
 
 ```python
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import numpy as np
-from collections import deque
+import math
+import random
 
-class PolicyNetwork(nn.Module):
+class PolicyNetwork:
+    """Простая линейная политика для выбора действия."""
     def __init__(self, state_dim, action_dim):
-        super(PolicyNetwork, self).__init__()
-        self.fc1 = nn.Linear(state_dim, 64)
-        self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, action_dim)
-        self.softmax = nn.Softmax(dim=-1)
+        # Инициализируем веса случайными значениями
+        self.weights = [[random.gauss(0, 0.1) for _ in range(state_dim)]
+                        for _ in range(action_dim)]
+        self.action_dim = action_dim
+        self.state_dim = state_dim
 
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        return self.softmax(self.fc3(x))
+    def get_probs(self, state):
+        """Вычисляет вероятности действий через softmax."""
+        logits = []
+        for i in range(self.action_dim):
+            logit = sum(self.weights[i][j] * state[j] for j in range(self.state_dim))
+            logits.append(logit)
 
-class REINFORCE:
-    def __init__(self, state_dim, action_dim, lr=0.01, gamma=0.99):
+        # Softmax для преобразования логитов в вероятности
+        max_logit = max(logits)
+        exp_logits = [math.exp(l - max_logit) for l in logits]
+        sum_exp = sum(exp_logits)
+        probs = [e / sum_exp for e in exp_logits]
+        return probs
+
+    def choose_action(self, state):
+        """Выбирает действие согласно распределению вероятностей."""
+        probs = self.get_probs(state)
+        r = random.random()
+        cumulative = 0
+        for i, p in enumerate(probs):
+            cumulative += p
+            if r <= cumulative:
+                return i
+        return len(probs) - 1
+
+    def update_weights(self, state, action, advantage, lr=0.01):
+        """Обновляет веса в направлении градиента."""
+        probs = self.get_probs(state)
+        # Градиент log-вероятности для softmax: (1 - p_a) для выбранного действия, -p_i для остальных
+        # Упрощенное обновление: увеличиваем вес выбранного действия пропорционально преимуществу
+
+        for j in range(self.state_dim):
+            # Для выбранного действия
+            grad = (1 - probs[action]) * state[j]
+            self.weights[action][j] += lr * advantage * grad
+
+            # Для невыбранных действий (штрафуем, если преимущество положительно)
+            for i in range(self.action_dim):
+                if i != action:
+                    grad_other = -probs[i] * state[j]
+                    self.weights[i][j] += lr * advantage * grad_other
+
+
+class ReinforceAgent:
+    def __init__(self, state_dim, action_dim, gamma=0.99, lr=0.01):
         self.policy = PolicyNetwork(state_dim, action_dim)
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=lr)
         self.gamma = gamma
-        self.memory = []
+        self.lr = lr
+        self.memory = [] # Хранит (state, action, reward)
 
     def act(self, state):
-        state = torch.FloatTensor(state).unsqueeze(0)
-        probs = self.policy(state)
-        action = torch.multinomial(probs, 1).item()
-        return action
+        return self.policy.choose_action(state)
 
     def remember(self, state, action, reward):
         self.memory.append((state, action, reward))
 
     def learn(self):
+        if not self.memory:
+            return
+
+        # Расчет дисконтированных возвратов (Returns)
         returns = []
         G = 0
-        # Рассчитываем дисконтированные возвраты с конца эпизода
-        for reward in reversed([x[2] for x in self.memory]):
+        rewards = [x[2] for x in self.memory]
+
+        for reward in reversed(rewards):
             G = reward + self.gamma * G
             returns.insert(0, G)
 
-        returns = torch.FloatTensor(returns)
-        returns = (returns - returns.mean()) / (returns.std() + 1e-9)  # Нормализация
+        # Нормализация возвратов для стабильности (Baseline)
+        mean_return = sum(returns) / len(returns)
+        std_return = (sum((r - mean_return) ** 2 for r in returns) / len(returns)) ** 0.5
+        if std_return > 1e-8:
+            normalized_returns = [(r - mean_return) / std_return for r in returns]
+        else:
+            normalized_returns = returns
 
-        policy_loss = []
-        for (state, action, _), G in zip(self.memory, returns):
-            state = torch.FloatTensor(state).unsqueeze(0)
-            probs = self.policy(state)
-            log_prob = torch.log(probs.squeeze(0)[action])
-            policy_loss.append(-log_prob * G)
+        # Обновление политики
+        for i, (state, action, _) in enumerate(self.memory):
+            advantage = normalized_returns[i]
+            self.policy.update_weights(state, action, advantage, self.lr)
 
-        self.optimizer.zero_grad()
-        loss = torch.stack(policy_loss).sum()
-        loss.backward()
-        self.optimizer.step()
-        self.memory = []  # Очищаем память после обучения
+        self.memory = [] # Очистка памяти после эпизода
 
-# Пример использования
-state_dim = 10  # Размерность состояния (например, эмбеддинг пользователя)
-action_dim = 5  # 5 товаров для рекомендации
-agent = REINFORCE(state_dim, action_dim)
 
-# Имитация одного эпизода (пользовательский сеанс)
-states = [np.random.randn(state_dim) for _ in range(10)]  # 10 шагов
-rewards = [np.random.choice([-0.1, 0.5, 1.0]) for _ in range(10)]  # Случайные награды
+if __name__ == "__main__":
+    # Параметры задачи
+    STATE_DIM = 4  # Например, вектор признаков пользователя
+    ACTION_DIM = 3 # 3 варианта рекомендации
 
-for state, reward in zip(states, rewards):
-    action = agent.act(state)
-    agent.remember(state, action, reward)
+    agent = ReinforceAgent(STATE_DIM, ACTION_DIM)
 
-agent.learn()  # Обновляем политику
+    print("Начало обучения агента...")
+
+    # Симуляция 100 эпизодов
+    for episode in range(100):
+        state = [random.random() for _ in range(STATE_DIM)]
+        total_reward = 0
+
+        # Эпизод из 5 шагов
+        for step in range(5):
+            action = agent.act(state)
+
+            # Простая функция награды: если действие 0, награда высокая, иначе низкая
+            # Агент должен научиться выбирать действие 0
+            reward = 1.0 if action == 0 else -0.5
+
+            agent.remember(state, action, reward)
+            total_reward += reward
+
+            # Переход в новое состояние (в реальности зависит от среды)
+            state = [random.random() for _ in range(STATE_DIM)]
+
+        agent.learn()
+
+        if episode % 20 == 0:
+            print(f"Эпизод {episode}, Средняя награда: {total_reward:.2f}")
+
+    # Тестирование обученного агента
+    print("\nТестирование:")
+    test_state = [0.5, 0.5, 0.5, 0.5]
+    actions_count = [0, 0, 0]
+    for _ in range(100):
+        a = agent.act(test_state)
+        actions_count[a] += 1
+
+    print(f"Распределение выборов действий: {actions_count}")
+    print("Агент должен чаще выбирать действие 0.")
 ```
 
-## 4. Пример: Actor-Critic для рекомендаций
+## Достоинства и недостатки
 
-### Код
+**Достоинства:**
 
-```python
-class ValueNetwork(nn.Module):
-    def __init__(self, state_dim):
-        super(ValueNetwork, self).__init__()
-        self.fc1 = nn.Linear(state_dim, 64)
-        self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, 1)
+1. **Работа с непрерывными действиями.** В отличие от DQN, PG может выдавать параметры непрерывного распределения (например, угол поворота руля), что критично для робототехники.
+2. **Естественная стохастичность.** Политика выдает вероятности, что позволяет эффективно исследовать среду без дополнительных эвристик вроде $\epsilon$-greedy.
+3. **Плавная сходимость.** Изменения политики происходят постепенно, что избегает резких скачков в поведении агента.
 
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        return self.fc3(x)
+**Недостатки:**
 
-class ActorCritic:
-    def __init__(self, state_dim, action_dim, lr=0.001, gamma=0.99):
-        self.actor = PolicyNetwork(state_dim, action_dim)
-        self.critic = ValueNetwork(state_dim)
-        self.optimizer = optim.Adam(
-            list(self.actor.parameters()) + list(self.critic.parameters()),
-            lr=lr
-        )
-        self.gamma = gamma
-        self.memory = []
+1. **Высокая дисперсия градиентов.** Оценка градиента через Монте-Карло (как в REINFORCE) очень шумная, что замедляет обучение.
+2. **Медленная сходимость.** Требует большого количества взаимодействий со средой по сравнению с off-policy методами.
+3. **Локальные оптимумы.** Алгоритм может застрять в субоптимальной политике, так как он улучшает только текущую стратегию, не исследуя глобально все возможные.
 
-    def act(self, state):
-        state = torch.FloatTensor(state).unsqueeze(0)
-        probs = self.actor(state)
-        action = torch.multinomial(probs, 1).item()
-        return action
+## Области применения
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
-
-    def learn(self):
-        states, actions, rewards, next_states, dones = zip(*self.memory)
-
-        states = torch.FloatTensor(np.array(states))
-        next_states = torch.FloatTensor(np.array(next_states))
-        actions = torch.LongTensor(actions)
-        rewards = torch.FloatTensor(rewards)
-        dones = torch.FloatTensor(dones)
-
-        # Критик оценивает V(s)
-        values = self.critic(states).squeeze()
-        next_values = self.critic(next_states).squeeze().detach()
-        targets = rewards + (1 - dones) * self.gamma * next_values
-        td_errors = targets - values
-
-        # Обновляем актора
-        probs = self.actor(states)
-        log_probs = torch.log(probs.gather(1, actions.unsqueeze(1)).squeeze())
-        actor_loss = -(log_probs * td_errors).mean()
-
-        # Обновляем критика
-        critic_loss = nn.MSELoss()(values, targets)
-
-        # Общий loss
-        loss = actor_loss + critic_loss
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-        self.memory = []
-```
-
-## 5. Проблемы Policy Gradient и решения
-
-### a) Высокая дисперси
-
-- **Решение**: Использовать **базовую линию (baseline)** или **Actor-Critic**.
-
-### **b) Неэффективное исследование**
-
-- **Решение**: **Энтропийная регуляризация** (поощряет разнообразие действий).
-
-### **c) Нестабильность обучения**
-
-- **Решение**: **PPO** или **TRPO** (ограничивают изменение политики).
-
-## 6. Где применяется?
-
-- **Spotify** → Для адаптации плейлистов.
-- **Netflix** → Персонализация рекомендаций.
-- **Доставка еды** → Оптимизация порядка ресторанов в ленте.
-
-## 7. Будущее PG в рекомендациях
-
-- **PPO + Трансформеры** → Учёт долгосрочной истории пользователя.
-- **Мета-обучение** → Быстрая адаптация к новым пользователям.
+1. Машинное обучение и рекомендательные системы (персонализация контента с учетом долгосрочной вовлеченности пользователя).
+2. Робототехника и автономные системы (управление манипуляторами и дронами в непрерывном пространстве движений).
+3. Игровая разработка (обучение ИИ-персонажей сложному поведению в стратегических играх).
+4. Торговля и коммерция (динамическое ценообразование и оптимизация рекламных ставок в реальном времени).

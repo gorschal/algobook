@@ -1,250 +1,158 @@
 ---
-tags: [Патерны проектирования]
+title: Паттерн Bridge (Мост)
+description: Структурный паттерн, разделяющий абстракцию и реализацию для их независимого изменения.
+date: 2026-07-25
+tags:
+  - "Паттерны проектирования"
 ---
 
 # Паттерн Bridge (Мост)
 
-Паттерн Bridge (Мост) - это структурный паттерн проектирования, который разделяет один или несколько классов на две отдельные иерархии - абстракцию и реализацию, позволяя изменять их независимо друг от друга.
+Паттерн Bridge (Мост) — это структурный паттерн проектирования, который разделяет один или несколько классов на две отдельные иерархии: абстракцию и реализацию, позволяя изменять их независимо друг от друга.
 
-## Основная идея
+## Подробное описание
 
-Мост предлагает заменить наследование композицией, поместив реализацию в отдельный класс (или иерархию классов) и передавая экземпляр этого класса в исходный класс в качестве параметра.
+**Постановка задачи:**
+Часто возникает ситуация, когда класс должен поддерживать несколько вариантов реализации одной и той же функциональности (например, отрисовка фигуры может выполняться через векторную графику или растровую). Если использовать наследование, количество классов растет экспоненциально (Комбинация N абстракций и M реализаций дает N\*M классов).
 
-## Когда использовать Bridge?
+**Ключевая идея:**
+Заменить наследование композицией. Реализация выносится в отдельную иерархию классов, а абстракция хранит ссылку на объект реализации. Это позволяет менять реализацию во время выполнения программы и расширять обе иерархии независимо.
 
-- Когда вы хотите разделить монолитный класс, который содержит несколько различных реализаций какой-то функциональности
-- Когда класс нужно расширять в двух независимых плоскостях (абстракция и реализация)
-- Когда реализацию нужно изменять во время выполнения программы
+**Исторический контекст:**
+Паттерн описан в книге «Банды четырех» (Gang of Four) как один из фундаментальных структурных паттернов. Он решает проблему жесткой связи между интерфейсом и его реализацией.
 
-## Структура паттерна
+## Принцип работы
 
+Паттерн состоит из четырех основных участников:
+
+1. **Abstraction (Абстракция):** определяет интерфейс управления. Хранит ссылку на объект реализации.
+2. **Refined Abstraction (Уточненная абстракция):** расширяет интерфейс абстракции.
+3. **Implementor (Реализация):** определяет интерфейс реализации. Этот интерфейс не обязательно должен точно соответствовать интерфейсу Abstraction; часто он более низкоуровневый.
+4. **Concrete Implementor (Конкретная реализация):** содержит конкретную логику реализации.
+
+### Блок-схема структуры
+
+```mermaid
+classDiagram
+    class Abstraction {
+        +Implementor implementor
+        +operation()
+    }
+    class RefinedAbstraction {
+        +operation()
+    }
+    class Implementor {
+        <<interface>>
+        +operationImpl()
+    }
+    class ConcreteImplementorA {
+        +operationImpl()
+    }
+    class ConcreteImplementorB {
+        +operationImpl()
+    }
+
+    Abstraction o-- Implementor : композиция
+    RefinedAbstraction --|> Abstraction : наследует
+    ConcreteImplementorA ..|> Implementor : реализует
+    ConcreteImplementorB ..|> Implementor : реализует
 ```
-           Абстракция
-          /          \
-RefinedAbstractionA   RefinedAbstractionB
-         |             |
-    Реализация      Реализация
-       /    \
-ConcreteImplementationA ConcreteImplementationB
-```
 
-## Пример 1: Фигуры и способы их рисования
+## Пример реализации на Python
+
+В данном примере мы реализуем систему отрисовки фигур. Абстракция — это сама фигура (Круг), а реализация — способ отрисовки (Векторный или Растровый рендерер).
 
 ```python
 from abc import ABC, abstractmethod
 
-# Реализация (Implementation)
+# --- Иерархия Реализации (Implementation) ---
+
 class Renderer(ABC):
+    """Интерфейс реализации (Implementor)."""
     @abstractmethod
-    def render_circle(self, radius):
+    def render_circle(self, radius: float) -> None:
         pass
 
-# Конкретные реализации (Concrete Implementations)
 class VectorRenderer(Renderer):
-    def render_circle(self, radius):
+    """Конкретная реализация: векторная графика."""
+    def render_circle(self, radius: float) -> None:
         print(f"Drawing a circle of radius {radius} using vector graphics")
 
 class RasterRenderer(Renderer):
-    def render_circle(self, radius):
+    """Конкретная реализация: растровая графика (пиксели)."""
+    def render_circle(self, radius: float) -> None:
         print(f"Drawing a circle of radius {radius} using pixels")
 
-# Абстракция (Abstraction)
+# --- Иерархия Абстракции (Abstraction) ---
+
 class Shape:
-    def __init__(self, renderer):
+    """Базовая абстракция. Хранит ссылку на реализацию."""
+    def __init__(self, renderer: Renderer):
         self.renderer = renderer
 
-    def draw(self): pass
-    def resize(self, factor): pass
+    def draw(self) -> None:
+        raise NotImplementedError
 
-# Уточненная абстракция (Refined Abstraction)
+    def resize(self, factor: float) -> None:
+        raise NotImplementedError
+
 class Circle(Shape):
-    def __init__(self, renderer, radius):
+    """Уточненная абстракция: Круг."""
+    def __init__(self, renderer: Renderer, radius: float):
         super().__init__(renderer)
         self.radius = radius
 
-    def draw(self):
+    def draw(self) -> None:
+        # Делегируем работу реализации
         self.renderer.render_circle(self.radius)
 
-    def resize(self, factor):
+    def resize(self, factor: float) -> None:
         self.radius *= factor
 
-# Клиентский код
 if __name__ == "__main__":
-    raster = RasterRenderer()
-    vector = VectorRenderer()
+    # Создаем реализации
+    raster_renderer = RasterRenderer()
+    vector_renderer = VectorRenderer()
 
-    circle1 = Circle(raster, 5)
-    circle1.draw()
-    circle1.resize(2)
-    circle1.draw()
+    # Создаем абстракции с разными реализациями
+    circle_raster = Circle(raster_renderer, 5)
+    circle_vector = Circle(vector_renderer, 10)
 
-    circle2 = Circle(vector, 10)
-    circle2.draw()
+    # Используем абстракции
+    print("Raster Circle:")
+    circle_raster.draw()
+
+    print("\nVector Circle:")
+    circle_vector.draw()
+
+    # Меняем состояние абстракции
+    circle_raster.resize(2)
+    print("\nResized Raster Circle:")
+    circle_raster.draw()
 ```
 
-Вывод:
+**Вывод программы:**
 
-```
+```text
+Raster Circle:
 Drawing a circle of radius 5 using pixels
-Drawing a circle of radius 10 using pixels
+
+Vector Circle:
 Drawing a circle of radius 10 using vector graphics
+
+Resized Raster Circle:
+Drawing a circle of radius 10 using pixels
 ```
 
-## Пример 2: Устройства и пульты управления
+## Достоинства и недостатки
 
-```python
-from abc import ABC, abstractmethod
+**Достоинства:**
 
-# Реализация (устройства)
-class Device(ABC):
-    @property
-    @abstractmethod
-    def is_enabled(self):
-        pass
+1. **Разделение ответственности:** Абстракция и реализация развиваются независимо. Можно добавлять новые фигуры, не трогая код рендереров, и наоборот.
+2. **Снижение количества классов:** Вместо создания комбинаторного взрыва подклассов (КругВекторный, КругРастровый, КвадратВекторный...), мы создаем две линейные иерархии.
+3. **Гибкость во время выполнения:** Реализацию можно подменять на лету (например, переключить рендеринг с высокого качества на низкое для экономии ресурсов).
 
-    @abstractmethod
-    def enable(self):
-        pass
+**Недостатки:**
 
-    @abstractmethod
-    def disable(self):
-        pass
-
-    @abstractmethod
-    def get_volume(self):
-        pass
-
-    @abstractmethod
-    def set_volume(self, percent):
-        pass
-
-    @abstractmethod
-    def get_channel(self):
-        pass
-
-    @abstractmethod
-    def set_channel(self, channel):
-        pass
-
-# Конкретные устройства
-class TV(Device):
-    def __init__(self):
-        self._on = False
-        self._volume = 50
-        self._channel = 1
-
-    @property
-    def is_enabled(self):
-        return self._on
-
-    def enable(self):
-        self._on = True
-
-    def disable(self):
-        self._on = False
-
-    def get_volume(self):
-        return self._volume
-
-    def set_volume(self, percent):
-        self._volume = percent
-
-    def get_channel(self):
-        return self._channel
-
-    def set_channel(self, channel):
-        self._channel = channel
-
-class Radio(Device):
-    def __init__(self):
-        self._on = False
-        self._volume = 30
-        self._channel = 101.5
-
-    @property
-    def is_enabled(self):
-        return self._on
-
-    def enable(self):
-        self._on = True
-
-    def disable(self):
-        self._on = False
-
-    def get_volume(self):
-        return self._volume
-
-    def set_volume(self, percent):
-        self._volume = percent
-
-    def get_channel(self):
-        return self._channel
-
-    def set_channel(self, channel):
-        self._channel = channel
-
-# Абстракция (пульты)
-class Remote:
-    def __init__(self, device: Device):
-        self._device = device
-
-    def toggle_power(self):
-        if self._device.is_enabled:
-            self._device.disable()
-        else:
-            self._device.enable()
-
-    def volume_down(self):
-        self._device.set_volume(self._device.get_volume() - 10)
-
-    def volume_up(self):
-        self._device.set_volume(self._device.get_volume() + 10)
-
-    def channel_down(self):
-        self._device.set_channel(self._device.get_channel() - 1)
-
-    def channel_up(self):
-        self._device.set_channel(self._device.get_channel() + 1)
-
-# Уточненная абстракция (расширенный пульт)
-class AdvancedRemote(Remote):
-    def mute(self):
-        self._device.set_volume(0)
-
-# Клиентский код
-if __name__ == "__main__":
-    tv = TV()
-    remote = Remote(tv)
-    remote.toggle_power()
-    remote.volume_up()
-    remote.channel_up()
-    print(f"TV: channel={tv.get_channel()}, volume={tv.get_volume()}")
-
-    radio = Radio()
-    advanced_remote = AdvancedRemote(radio)
-    advanced_remote.toggle_power()
-    advanced_remote.mute()
-    print(f"Radio: channel={radio.get_channel()}, volume={radio.get_volume()}")
-```
-
-Вывод:
-
-```
-TV: channel=2, volume=60
-Radio: channel=101.5, volume=0
-```
-
-## Преимущества паттерна Bridge
-
-- Разделяет абстракцию и реализацию, позволяя изменять их независимо
-- Уменьшает количество подклассов (нет необходимости создавать комбинации абстракций и реализаций)
-- Позволяет добавлять новые абстракции и реализации независимо
-- Позволяет скрыть детали реализации от клиентского кода
-
-## Отличие от других паттернов
-
-- **Adapter** пытается сделать интерфейсы совместимыми, а **Bridge** разделяет абстракцию и реализацию заранее
-- **Abstract Factory** может работать вместе с Bridge для создания конкретных реализаций
-- **Strategy** похож на Bridge, но фокусируется на изменении поведения, а Bridge - на структуре
-
-Bridge особенно полезен в ситуациях, когда у вас есть несколько вариантов абстракции и несколько вариантов реализации, и вы хотите избежать экспоненциального роста количества классов при их комбинировании.
+1. **Усложнение кода:** Появляются дополнительные уровни косвенности. Код становится сложнее для понимания новичками.
+2. **Требует правильного проектирования:** Нужно заранее выявить оси независимых изменений, иначе применение паттерна может быть избыточным.

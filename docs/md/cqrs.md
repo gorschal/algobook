@@ -1,124 +1,130 @@
 ---
-tags: [Патерны проектирования]
+title: CQRS (Command Query Responsibility Segregation)
+description: Архитектурный шаблон разделения операций чтения и записи для оптимизации производительности и масштабируемости.
+date: 2026-07-25
+tags:
+  - "Паттерны проектирования"
+  - "Аналитика данных и базы данных"
 ---
 
 # CQRS (Command Query Responsibility Segregation)
 
-## Что такое CQRS?
+CQRS (произносится как «Си-Кью-Эр-Эс», от англ. _Command Query Responsibility Segregation_ — разделение ответственности команд и запросов) — это архитектурный шаблон, который разделяет операции изменения состояния системы (команды) и операции получения данных (запросы) на независимые модели. Основная идея заключается в том, что модель для записи может отличаться от модели для чтения, что позволяет оптимизировать каждую из них под конкретные требования производительности, безопасности и сложности бизнес-логики.
 
-**CQRS** (**Command Query Responsibility Segregation**) - это архитектурный шаблон, который разделяет операции чтения (`queries`) и операции записи (`commands`) в приложении. Основная идея заключается в том, что модели для чтения и записи могут быть разными, что позволяет оптимизировать каждую из них для своей задачи.
+## Подробное описание
 
-## Основные принципы CQRS
+Традиционные CRUD-приложения используют одну и ту же модель данных (часто соответствующую структуре таблиц базы данных) как для записи, так и для чтения. Это создает конфликт интересов: структура, удобная для транзакционной целостности при записи, часто неэффективна для сложных аналитических запросов или быстрого отображения интерфейса.
 
-1. **Разделение команд и запросов**:
+**Постановка задачи:**
+Необходимо построить систему, где:
 
-   - Команды (Commands) - изменяют состояние системы (CREATE, UPDATE, DELETE)
-   - Запросы (Queries) - получают данные без изменения состояния (READ)
+1. Операции записи гарантируют строгую согласованность данных и соблюдение инвариантов бизнес-правил.
+2. Операции чтения обеспечивают максимальную скорость отклика и гибкость форматов вывода, не нагружая основную транзакционную базу сложными JOIN-ами или агрегациями.
 
-2. **Разные модели**:
+**Входные данные:**
 
-   - Модель записи (Write Model) - оптимизирована для бизнес-логики и валидации
-   - Модель чтения (Read Model) - оптимизирована для отображения данных
+- Для команд: DTO (Data Transfer Objects) с данными для изменения состояния.
+- Для запросов: Параметры фильтрации, пагинации и сортировки.
 
-3. **Разные хранилища (опционально)**:
-   - Для записи и чтения могут использоваться разные базы данных
+**Выходные данные:**
 
-## Преимущества CQRS
+- Для команд: Подтверждение выполнения или ошибка валидации.
+- Для запросов: DTO, оптимизированные для конкретного представления (UI, API, отчета).
 
-- Улучшение масштабируемости (чтение и запись можно масштабировать отдельно)
-- Упрощение моделей (каждая модель решает только одну задачу)
-- Гибкость в выборе хранилищ
-- Улучшение производительности (оптимизация под конкретные сценарии)
+**Ключевая идея:**
+Разделение одной модели домена на две:
 
-## Недостатки CQRS
+1. **Write Model (Модель записи):** Фокусируется на поведении, валидации и сохранении состояния. Часто использует нормализованные схемы.
+2. **Read Model (Модель чтения):** Фокусируется на представлении данных. Может быть денормализована, кэширована или храниться в специализированных СУБД (например, Elasticsearch, MongoDB).
 
-- Усложнение архитектуры
-- Проблемы согласованности данных (eventual consistency)
-- Дополнительные накладные расходы на синхронизацию моделей
+Синхронизация между моделями обычно происходит асинхронно через шину событий (Event Bus), что приводит к eventual consistency (согласованности в конечном счете).
 
-## Пример реализации CQRS на Python
+## Основные принципы
 
-### 1. Базовый пример без разделения хранилищ
+### Математическая/Логическая формулировка
 
-```python
-class UserWriteModel:
-    def __init__(self):
-        self.users = {}
+В основе CQRS лежит принцип разделения функций $f$ и $g$:
 
-    def create_user(self, user_id, name, email):
-        if user_id in self.users:
-            raise ValueError("User already exists")
-        # Сложная бизнес-логика валидации
-        if not email or "@" not in email:
-            raise ValueError("Invalid email")
-        self.users[user_id] = {"name": name, "email": email}
+$$
+\text{System} = \{ M_{write}, M_{read} \}
+$$
 
-    def update_user(self, user_id, name=None, email=None):
-        if user_id not in self.users:
-            raise ValueError("User not found")
-        if email is not None:
-            if not email or "@" not in email:
-                raise ValueError("Invalid email")
-            self.users[user_id]["email"] = email
-        if name is not None:
-            self.users[user_id]["name"] = name
+Где:
 
+- $M_{write}$ обрабатывает множество команд $C$: $M_{write}(c) \rightarrow \Delta State$
+- $M_{read}$ обрабатывает множество запросов $Q$: $M_{read}(q) \rightarrow Data$
 
-class UserReadModel:
-    def __init__(self, write_model):
-        self.write_model = write_model
+Связь между моделями описывается функцией проекции $\Pi$, которая применяется к потоку событий $E$:
 
-    def get_user(self, user_id):
-        user = self.write_model.users.get(user_id)
-        if not user:
-            return None
-        # Оптимизированное представление для чтения
-        return {
-            "user_id": user_id,
-            "user_name": user["name"],
-            "user_email": user["email"],
-            "email_provider": user["email"].split("@")[-1]
-        }
+$$
+M_{read} = \Pi(E), \quad \text{где } E = \{ e_1, e_2, ..., e_n \}
+$$
 
-    def list_users(self):
-        return [
-            {"user_id": uid, "name": data["name"]}
-            for uid, data in self.write_model.users.items()
-        ]
+Это означает, что модель чтения является производной от истории изменений, а не прямым отражением текущего состояния базы записи.
 
+### Блок-схема взаимодействия
 
-# Использование
-write_model = UserWriteModel()
-read_model = UserReadModel(write_model)
+```mermaid
+flowchart TD
+    Client[Клиент] -->|Command| API_Write[API Записи]
+    Client -->|Query| API_Read[API Чтения]
 
-# Команды (изменяют состояние)
-write_model.create_user(1, "Alice", "alice@example.com")
-write_model.create_user(2, "Bob", "bob@example.org")
+    API_Write --> Domain[Доменная модель]
+    Domain -->|Validate & Process| DB_Write[(Write DB)]
+    Domain -->|Publish Event| EventBus[Шина событий]
 
-# Запросы (получают данные)
-print(read_model.get_user(1))  # {'user_id': 1, 'user_name': 'Alice', ...}
-print(read_model.list_users())  # [{'user_id': 1, 'name': 'Alice'}, ...]
+    EventBus -->|Consume| Projector[Проектор]
+    Projector -->|Update View| DB_Read[(Read DB)]
+
+    API_Read --> DB_Read
+    DB_Read -->|DTO| Client
 ```
 
-### 2. Пример с разделением хранилищ и событийной синхронизацией
+## Пример реализации на Python
+
+Ниже представлен пример реализации CQRS с использованием событийной синхронизации. Для простоты используются встроенные структуры данных, но логика легко переносится на реальные СУБД.
 
 ```python
-from typing import Dict, List
 import json
+from typing import Dict, List, Any, Callable
+from datetime import datetime
 
-# Модель записи
+class EventStore:
+    """Хранилище событий, обеспечивающее связь между Write и Read моделями."""
+    def __init__(self):
+        self.events: List[Dict[str, Any]] = []
+        self.subscribers: List[Callable] = []
+
+    def publish(self, event: Dict[str, Any]):
+        """Сохраняет событие и уведомляет подписчиков."""
+        self.events.append(event)
+        for subscriber in self.subscribers:
+            # В реальной системе это происходило бы асинхронно
+            subscriber(event)
+
+    def subscribe(self, handler: Callable):
+        """Регистрирует обработчик событий (проектор)."""
+        self.subscribers.append(handler)
+        # Опционально: можно воспроизвести историю для нового подписчика
+
 class UserWriteModel:
-    def __init__(self, event_store):
+    """Модель записи: отвечает за валидацию и бизнес-правила."""
+    def __init__(self, event_store: EventStore):
         self.event_store = event_store
+        # В реальном приложении здесь был бы доступ к Write DB
+        self._existing_ids = set()
 
-    def create_user(self, user_id, name, email):
-        # Валидация
+    def create_user(self, user_id: int, name: str, email: str):
+        if user_id in self._existing_ids:
+            raise ValueError(f"User with id {user_id} already exists")
+
         if not email or "@" not in email:
-            raise ValueError("Invalid email")
+            raise ValueError("Invalid email format")
 
-        # Генерируем событие
+        # Бизнес-логика выполнена, генерируем событие
         event = {
             "type": "UserCreated",
+            "timestamp": datetime.now().isoformat(),
             "data": {
                 "user_id": user_id,
                 "name": name,
@@ -126,11 +132,18 @@ class UserWriteModel:
             }
         }
         self.event_store.publish(event)
+        self._existing_ids.add(user_id)
 
-    def update_email(self, user_id, new_email):
-        # В реальности здесь была бы проверка существования пользователя
+    def update_email(self, user_id: int, new_email: str):
+        if user_id not in self._existing_ids:
+            raise ValueError("User not found")
+
+        if not new_email or "@" not in new_email:
+            raise ValueError("Invalid email format")
+
         event = {
             "type": "UserEmailUpdated",
+            "timestamp": datetime.now().isoformat(),
             "data": {
                 "user_id": user_id,
                 "new_email": new_email
@@ -138,222 +151,97 @@ class UserWriteModel:
         }
         self.event_store.publish(event)
 
-
-# Модель чтения
 class UserReadModel:
+    """Модель чтения: оптимизирована для быстрых выборок и специфичных форматов."""
     def __init__(self):
-        self.users = {}
-        self.email_provider_stats = {}
+        # Денормализованное хранилище, готовое к выдаче
+        self.users_cache: Dict[int, Dict[str, Any]] = {}
+        self.stats: Dict[str, int] = {}
 
-    def apply_event(self, event):
+    def handle_event(self, event: Dict[str, Any]):
+        """Проецирует событие из Write модели в Read модель."""
         event_type = event["type"]
         data = event["data"]
 
         if event_type == "UserCreated":
-            user_id = data["user_id"]
-            self.users[user_id] = {
-                "name": data["name"],
-                "email": data["email"]
-            }
+            uid = data["user_id"]
             provider = data["email"].split("@")[-1]
-            self.email_provider_stats[provider] = self.email_provider_stats.get(provider, 0) + 1
+
+            self.users_cache[uid] = {
+                "id": uid,
+                "display_name": data["name"].upper(), # Пример трансформации для UI
+                "email": data["email"],
+                "provider": provider
+            }
+            self.stats[provider] = self.stats.get(provider, 0) + 1
 
         elif event_type == "UserEmailUpdated":
-            user_id = data["user_id"]
-            old_email = self.users[user_id]["email"]
-            old_provider = old_email.split("@")[-1]
-            new_provider = data["new_email"].split("@")[-1]
+            uid = data["user_id"]
+            if uid in self.users_cache:
+                old_provider = self.users_cache[uid]["provider"]
+                new_provider = data["new_email"].split("@")[-1]
 
-            # Обновляем пользователя
-            self.users[user_id]["email"] = data["new_email"]
+                # Обновление кэша
+                self.users_cache[uid]["email"] = data["new_email"]
+                self.users_cache[uid]["provider"] = new_provider
 
-            # Обновляем статистику
-            self.email_provider_stats[old_provider] -= 1
-            if self.email_provider_stats[old_provider] == 0:
-                del self.email_provider_stats[old_provider]
-            self.email_provider_stats[new_provider] = self.email_provider_stats.get(new_provider, 0) + 1
+                # Обновление статистики
+                self.stats[old_provider] -= 1
+                if self.stats[old_provider] == 0:
+                    del self.stats[old_provider]
+                self.stats[new_provider] = self.stats.get(new_provider, 0) + 1
 
-    def get_user(self, user_id):
-        user = self.users.get(user_id)
-        if not user:
-            return None
-        return {
-            "user_id": user_id,
-            "name": user["name"],
-            "email": user["email"],
-            "email_provider": user["email"].split("@")[-1]
-        }
+    def get_user_profile(self, user_id: int) -> Dict[str, Any]:
+        """Быстрый доступ к профилю без JOIN-ов."""
+        return self.users_cache.get(user_id)
 
-    def get_email_providers_stats(self):
-        return self.email_provider_stats
+    def get_provider_statistics(self) -> Dict[str, int]:
+        """Готовая агрегация, которая в SQL требовала бы GROUP BY."""
+        return self.stats.copy()
 
+if __name__ == "__main__":
+    # Инициализация инфраструктуры
+    event_bus = EventStore()
+    write_model = UserWriteModel(event_bus)
+    read_model = UserReadModel()
 
-# Хранилище событий
-class EventStore:
-    def __init__(self):
-        self.events = []
-        self.subscribers = []
+    # Подписка Read модели на события
+    event_bus.subscribe(read_model.handle_event)
 
-    def publish(self, event):
-        self.events.append(event)
-        for subscriber in self.subscribers:
-            subscriber.apply_event(event)
+    # --- Выполнение Команд (Write) ---
+    try:
+        write_model.create_user(1, "Alice", "alice@corp.com")
+        write_model.create_user(2, "Bob", "bob@startup.io")
+        write_model.update_email(1, "alice@new-corp.com")
+    except ValueError as e:
+        print(f"Error: {e}")
 
-    def subscribe(self, subscriber):
-        self.subscribers.append(subscriber)
-        # Воспроизводим все прошлые события для нового подписчика
-        for event in self.events:
-            subscriber.apply_event(event)
+    # --- Выполнение Запросов (Read) ---
+    # Данные уже актуальны в Read модели благодаря синхронной обработке в примере
+    print("Profile:", read_model.get_user_profile(1))
+    # Output: {'id': 1, 'display_name': 'ALICE', 'email': 'alice@new-corp.com', 'provider': 'new-corp.com'}
 
-
-# Использование
-event_store = EventStore()
-write_model = UserWriteModel(event_store)
-read_model = UserReadModel()
-event_store.subscribe(read_model)
-
-# Выполняем команды
-write_model.create_user(1, "Alice", "alice@example.com")
-write_model.create_user(2, "Bob", "bob@example.org")
-write_model.create_user(3, "Charlie", "charlie@example.com")
-
-# Обновляем email
-write_model.update_email(1, "alice@newdomain.com")
-
-# Выполняем запросы
-print(read_model.get_user(1))
-# {'user_id': 1, 'name': 'Alice', 'email': 'alice@newdomain.com', 'email_provider': 'newdomain.com'}
-
-print(read_model.get_email_providers_stats())
-# {'example.org': 1, 'example.com': 1, 'newdomain.com': 1}
+    print("Stats:", read_model.get_provider_statistics())
+    # Output: {'startup.io': 1, 'new-corp.com': 1}
 ```
 
-### 3. Пример с использованием разных баз данных
+## Достоинства и недостатки
 
-```python
-# Предположим, что у нас есть:
-# - PostgreSQL для записи (реляционная модель)
-# - MongoDB для чтения (документ-ориентированная модель)
+**Достоинства:**
 
-import psycopg2
-from pymongo import MongoClient
-from datetime import datetime
+1. **Оптимизация производительности.** Модель чтения может быть денормализована и индексирована специально под нужные запросы, что ускоряет отклик UI.
+2. **Масштабируемость.** Нагрузки на чтение и запись можно масштабировать независимо друг от друга (например, добавляя больше реплик для Read DB).
+3. **Безопасность.** Можно строго разграничить права доступа: одни сервисы пишут, другие только читают.
+4. **Упрощение сложных запросов.** Агрегации и сложные отчеты вычисляются заранее при обновлении Read модели, а не в момент запроса.
 
-# Настройка подключений
-pg_conn = psycopg2.connect("dbname=write_db user=postgres")
-mongo_client = MongoClient("mongodb://localhost:27017/")
-read_db = mongo_client["read_db"]
+**Недостатки:**
 
-class UserCommandHandler:
-    def __init__(self, pg_conn, event_bus):
-        self.pg_conn = pg_conn
-        self.event_bus = event_bus
+1. **Сложность архитектуры.** Требуется поддержка двух моделей, механизма синхронизации и обработки ошибок рассинхронизации.
+2. **Eventual Consistency.** Данные в модели чтения могут быть устаревшими на короткий промежуток времени после записи. Это неприемлемо для систем, требующих строгой консистентности в реальном времени.
+3. **Накладные расходы.** Необходимость поддержки шины событий и проекторов увеличивает объем кода и инфраструктурные требования.
 
-    def create_user(self, name, email):
-        # Валидация
-        if not email or "@" not in email:
-            raise ValueError("Invalid email")
+## Области применения
 
-        # Запись в PostgreSQL
-        with self.pg_conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO users (name, email, created_at) VALUES (%s, %s, %s) RETURNING id",
-                (name, email, datetime.utcnow())
-            )
-            user_id = cur.fetchone()[0]
-            self.pg_conn.commit()
-
-        # Публикуем событие
-        self.event_bus.publish({
-            "type": "UserCreated",
-            "data": {
-                "user_id": user_id,
-                "name": name,
-                "email": email,
-                "created_at": datetime.utcnow().isoformat()
-            }
-        })
-
-        return user_id
-
-
-class UserReadModel:
-    def __init__(self, mongo_db):
-        self.users = mongo_db["users"]
-
-    def handle_event(self, event):
-        event_type = event["type"]
-        data = event["data"]
-
-        if event_type == "UserCreated":
-            # Оптимизированное представление для чтения в MongoDB
-            self.users.insert_one({
-                "user_id": data["user_id"],
-                "name": data["name"],
-                "email": data["email"],
-                "email_provider": data["email"].split("@")[-1],
-                "created_at": data["created_at"],
-                "search_terms": [data["name"].lower(), data["email"].lower()]
-            })
-
-    def get_user(self, user_id):
-        return self.users.find_one({"user_id": user_id}, {"_id": 0})
-
-    def search_users(self, term):
-        term = term.lower()
-        return list(self.users.find({
-            "search_terms": term
-        }, {"_id": 0}))
-
-
-class EventBus:
-    def __init__(self):
-        self.subscribers = []
-
-    def publish(self, event):
-        for subscriber in self.subscribers:
-            subscriber.handle_event(event)
-
-    def subscribe(self, subscriber):
-        self.subscribers.append(subscriber)
-
-
-# Инициализация
-event_bus = EventBus()
-command_handler = UserCommandHandler(pg_conn, event_bus)
-read_model = UserReadModel(read_db)
-event_bus.subscribe(read_model)
-
-# Создаем пользователя (Command)
-user_id = command_handler.create_user("Alice", "alice@example.com")
-
-# Читаем данные (Query)
-print(read_model.get_user(user_id))
-print(read_model.search_users("alice"))
-```
-
-## Когда использовать CQRS?
-
-CQRS хорошо подходит для:
-
-- Систем с высокой нагрузкой на чтение или запись
-- Сложных доменных моделей
-- Систем, где требования к чтению и записи сильно отличаются
-- Систем, использующих event sourcing
-
-## Когда не стоит использовать CQRS?
-
-- Простые CRUD-приложения
-- Когда eventual consistency неприемлема
-- В небольших проектах, где сложность не оправдана
-
-## Заключение
-
-CQRS - это мощный шаблон, который может значительно улучшить архитектуру сложных систем, но он вводит дополнительную сложность. Решение о его использовании должно быть взвешенным и основываться на конкретных требованиях проекта.
-
-Представленные примеры демонстрируют основные концепции CQRS, но в реальных проектах могут потребоваться дополнительные механизмы, такие как:
-
-- Компенсационные транзакции
-- Механизмы повторной обработки событий
-- Более сложные стратегии синхронизации
-- Оптимистичные блокировки для модели записи
+1. Паттерны проектирования (реализация масштабируемой архитектуры микросервисов, снижение связанности модулей чтения и записи).
+2. Аналитика данных и базы данных (построение быстрых дашбордов и отчетов на основе денормализованных Read моделей, подготовка данных для OLAP-кубов).
+3. Торговля и коммерция (оптимизация каталогов товаров на маркетплейсах, где частота просмотров значительно превышает частоту обновления цен или описаний).

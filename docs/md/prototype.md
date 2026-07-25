@@ -1,176 +1,181 @@
 ---
-tags: [Патерны проектирования]
+title: Паттерн Prototype (Прототип)
+description: Порождающий паттерн проектирования для создания объектов путем клонирования существующих экземпляров.
+date: 2026-07-25
+tags:
+  - "Паттерны проектирования"
+  - "Игровая разработка"
 ---
 
 # Паттерн Prototype (Прототип)
 
-Паттерн Prototype (Прототип) — это порождающий паттерн проектирования, который позволяет создавать новые объекты путем копирования существующих (прототипов), вместо создания объектов через конструктор. Это особенно полезно, когда создание объекта требует больших затрат ресурсов или когда система должна быть независимой от того, как создаются, компонуются и представляются её продукты.
+Паттерн Prototype (Прототип) — это порождающий паттерн проектирования, который позволяет создавать новые объекты путем копирования существующих экземпляров (прототипов), вместо создания объектов через конструктор.
 
-## Когда использовать Prototype
+Этот подход особенно полезен, когда создание объекта требует значительных затрат ресурсов (например, обращение к базе данных или сложные вычисления при инициализации) или когда система должна быть независимой от способа создания, композиции и представления своих продуктов.
 
-1. Когда нужно избежать построения иерархий фабрик или конструкторов
-2. Когда создание объекта дороже, чем его копирование
-3. Когда классы создаются во время выполнения
-4. Когда нужно легко добавлять и удалять объекты во время выполнения
+## Подробное описание
 
-## Реализация в Python
+### Постановка задачи
 
-В Python прототипный паттерн можно реализовать с помощью встроенного модуля `copy`, который предоставляет функции `copy()` (поверхностное копирование) и `deepcopy()` (глубокое копирование).
+Необходимо создать множество объектов, которые имеют схожую структуру и начальное состояние, но могут незначительно отличаться друг от друга. Прямое создание каждого объекта через конструктор (`new Class()`) может быть дорогостоящим или невозможным, если классы неизвестны на этапе компиляции.
 
-### Базовый пример
+### Входные и выходные данные
 
-```python
-import copy
+- **Вход:** Существующий объект-прототип, полностью настроенный и готовый к использованию.
+- **Выход:** Новый объект, являющийся точной копией прототипа (или его модифицированной версией).
 
-class Prototype:
-    def __init__(self):
-        self._objects = {}
+### Ключевая идея
 
-    def register_object(self, name, obj):
-        """Регистрирует объект для клонирования"""
-        self._objects[name] = obj
+Вместо того чтобы описывать процесс создания объекта шаг за шагом, мы берем уже созданный объект и клонируем его. Клиентский код работает с интерфейсом клонирования, не зная конкретных классов создаваемых объектов.
 
-    def unregister_object(self, name):
-        """Удаляет объект из регистрации"""
-        del self._objects[name]
+### Исторический контекст
 
-    def clone(self, name, **attrs):
-        """Клонирует зарегистрированный объект и обновляет его атрибуты"""
-        obj = copy.deepcopy(self._objects[name])
-        obj.__dict__.update(attrs)
-        return obj
+Паттерн был описан в книге «Банды четырех» (Gang of Four) как один из 23 классических паттернов проектирования. В языках со строгой типизацией (C++, Java) он часто требует реализации специального интерфейса `Cloneable`. В Python эта задача решается проще благодаря встроенному модулю `copy`.
 
-class Car:
-    def __init__(self):
-        self.make = "Toyota"
-        self.model = "Camry"
-        self.color = "Silver"
+## Принцип работы
 
-    def __str__(self):
-        return f"{self.color} {self.make} {self.model}"
+Логика паттерна строится вокруг метода `clone()`, который возвращает копию текущего объекта.
 
-# Использование
-prototype = Prototype()
-car = Car()
-prototype.register_object("basic_car", car)
+### Блок-схема процесса клонирования
 
-# Клонирование базового автомобиля
-car1 = prototype.clone("basic_car")
-print(car1)  # Silver Toyota Camry
-
-# Клонирование с изменением свойств
-car2 = prototype.clone("basic_car", color="Red", model="Corolla")
-print(car2)  # Red Toyota Corolla
+```mermaid
+flowchart TD
+    A[Клиент запрашивает новый объект] --> B{Есть ли прототип?}
+    B -->|Нет| C[Создать прототип через конструктор]
+    C --> D[Сохранить прототип]
+    B -->|Да| E[Вызвать метод clone у прототипа]
+    D --> E
+    E --> F[Создать глубокую копию объекта]
+    F --> G[Модифицировать атрибуты копии при необходимости]
+    G --> H[Вернуть новый объект клиенту]
 ```
 
-### Пример с графическими объектами
+Важно различать два типа копирования:
+
+1.  **Поверхностное копирование (Shallow Copy):** Копируется только сам объект, но ссылки на вложенные объекты остаются прежними. Изменение вложенного объекта в копии повлияет на оригинал.
+2.  **Глубокое копирование (Deep Copy):** Рекурсивно копируются все вложенные объекты. Это предпочтительный вариант для паттерна Prototype, чтобы обеспечить полную независимость объектов.
+
+## Пример реализации на Python
+
+В Python для реализации глубокого копирования используется модуль `copy`. Ниже представлен пример системы управления персонажами в игре, где прототипы используются для быстрого создания юнитов одного типа.
 
 ```python
 import copy
+from typing import Dict, Any
 
-class Shape:
-    def __init__(self):
-        self.id = None
-        self.type = None
+class GameUnit:
+    """Базовый класс игрового юнита, поддерживающий клонирование."""
 
-    def clone(self):
-        return copy.deepcopy(self)
-
-    def get_type(self):
-        return self.type
-
-    def get_id(self):
-        return self.id
-
-    def set_id(self, id):
-        self.id = id
-
-class Rectangle(Shape):
-    def __init__(self):
-        super().__init__()
-        self.type = "Rectangle"
-
-class Circle(Shape):
-    def __init__(self):
-        super().__init__()
-        self.type = "Circle"
-
-class ShapeCache:
-    _shape_map = {}
-
-    @staticmethod
-    def get_shape(shape_id):
-        cached_shape = ShapeCache._shape_map.get(shape_id, None)
-        return cached_shape.clone() if cached_shape else None
-
-    @staticmethod
-    def load():
-        circle = Circle()
-        circle.set_id("1")
-        ShapeCache._shape_map[circle.get_id()] = circle
-
-        rectangle = Rectangle()
-        rectangle.set_id("2")
-        ShapeCache._shape_map[rectangle.get_id()] = rectangle
-
-# Использование
-ShapeCache.load()
-
-circle = ShapeCache.get_shape("1")
-print(f"Shape: {circle.get_type()}")  # Shape: Circle
-
-rectangle = ShapeCache.get_shape("2")
-print(f"Shape: {rectangle.get_type()}")  # Shape: Rectangle
-```
-
-### Пример с персонажами игры
-
-```python
-import copy
-
-class GameCharacter:
-    def __init__(self, health, speed, attack_power):
+    def __init__(self, name: str, health: int, attack_power: int, position: tuple):
+        self.name = name
         self.health = health
-        self.speed = speed
         self.attack_power = attack_power
+        # Позиция - неизменяемый кортеж, но для демонстрации deepcopy используем список внутри
+        self.position = list(position)
+        self.inventory = [] # Сложный вложенный объект
 
-    def clone(self):
+    def clone(self) -> 'GameUnit':
+        """
+        Создает глубокую копию объекта.
+        Возвращает новый экземпляр класса с теми же данными.
+        """
         return copy.deepcopy(self)
 
+    def move(self, x: int, y: int):
+        """Изменяет позицию юнита."""
+        self.position[0] += x
+        self.position[1] += y
+
+    def add_item(self, item: str):
+        """Добавляет предмет в инвентарь."""
+        self.inventory.append(item)
+
     def __str__(self):
-        return f"Health: {self.health}, Speed: {self.speed}, Attack: {self.attack_power}"
+        return (f"Unit: {self.name}, HP: {self.health}, "
+                f"Atk: {self.attack_power}, Pos: {self.position}, "
+                f"Inv: {self.inventory}")
 
-# Создаем прототипы персонажей
-warrior_prototype = GameCharacter(100, 50, 80)
-mage_prototype = GameCharacter(60, 30, 120)
-archer_prototype = GameCharacter(80, 70, 60)
+class UnitFactory:
+    """Фабрика, хранящая прототипы юнитов."""
 
-# Клонируем персонажей
-warrior1 = warrior_prototype.clone()
-warrior2 = warrior_prototype.clone()
-warrior2.health = 120  # Модифицируем клон
+    def __init__(self):
+        self._prototypes: Dict[str, GameUnit] = {}
 
-mage1 = mage_prototype.clone()
-archer1 = archer_prototype.clone()
+    def register_prototype(self, key: str, prototype: GameUnit):
+        """Регистрирует прототип под определенным ключом."""
+        self._prototypes[key] = prototype
 
-print(warrior1)  # Health: 100, Speed: 50, Attack: 80
-print(warrior2)  # Health: 120, Speed: 50, Attack: 80
-print(mage1)     # Health: 60, Speed: 30, Attack: 120
-print(archer1)   # Health: 80, Speed: 70, Attack: 60
+    def create_unit(self, key: str, **overrides: Any) -> GameUnit:
+        """
+        Клонирует прототип и применяет переопределения атрибутов.
+        """
+        if key not in self._prototypes:
+            raise ValueError(f"Prototype with key '{key}' not found")
+
+        # Клонируем базовый прототип
+        new_unit = self._prototypes[key].clone()
+
+        # Применяем изменения (например, имя или позицию)
+        for attr, value in overrides.items():
+            if hasattr(new_unit, attr):
+                setattr(new_unit, attr, value)
+
+        return new_unit
+
+if __name__ == "__main__":
+    # 1. Создаем и настраиваем прототипы (это дорогая операция, делаем один раз)
+    warrior_proto = GameUnit("Warrior", health=100, attack_power=20, position=(0, 0))
+    warrior_proto.add_item("Sword")
+
+    mage_proto = GameUnit("Mage", health=60, attack_power=50, position=(0, 0))
+    mage_proto.add_item("Staff")
+    mage_proto.add_item("Mana Potion")
+
+    # 2. Регистрируем прототипы в фабрике
+    factory = UnitFactory()
+    factory.register_prototype("warrior", warrior_proto)
+    factory.register_prototype("mage", mage_proto)
+
+    # 3. Быстрое создание юнитов через клонирование
+    print("--- Создание армии ---")
+
+    # Создаем воина и двигаем его
+    warrior1 = factory.create_unit("warrior", name="Warrior-1")
+    warrior1.move(10, 5)
+    print(warrior1)
+
+    # Создаем другого воина с другим именем, но теми же характеристиками
+    warrior2 = factory.create_unit("warrior", name="Warrior-2")
+    warrior2.move(-5, 10)
+    print(warrior2)
+
+    # Создаем мага
+    mage1 = factory.create_unit("mage", name="Archmage", position=(100, 100))
+    print(mage1)
+
+    # Проверка независимости объектов (deep copy)
+    print("\n--- Проверка изоляции ---")
+    warrior1.add_item("Shield")
+    print(f"Warrior-1 Inv: {warrior1.inventory}")
+    print(f"Warrior-2 Inv: {warrior2.inventory}") # Инвентарь warrior2 не изменился
 ```
 
-## Преимущества и недостатки
+## Достоинства и недостатки
 
-**Преимущества:**
+**Достоинства:**
 
-- Позволяет добавлять и удалять объекты во время выполнения
-- Скрывает сложность создания новых объектов
-- Уменьшает количество подклассов
-- Позволяет динамически конфигурировать приложение классами
+1. **Уменьшение количества подклассов.** Вместо создания иерархии фабрик для каждого типа продукта, можно использовать одну фабрику с разными прототипами.
+2. **Динамическая конфигурация.** Позволяет добавлять и удалять типы объектов во время выполнения программы, просто регистрируя новые прототипы.
+3. **Производительность.** Клонирование готового объекта часто быстрее, чем его создание через конструктор с сложной логикой инициализации.
+4. **Скрытие сложности.** Клиентскому коду не нужно знать детали создания объекта, достаточно вызвать метод `clone()`.
 
 **Недостатки:**
 
-- Сложность реализации, если объекты имеют циклические ссылки
-- Необходимость реализации механизма клонирования для каждого класса
+1. **Сложность клонирования сложных объектов.** Если объект содержит циклические ссылки или ссылки на внешние ресурсы (файлы, сетевые соединения), реализовать корректное глубокое копирование может быть трудно.
+2. **Проблемы с наследованием.** В некоторых языках клонирование объектов с закрытыми полями может нарушать инкапсуляцию.
+3. **Риск ошибок.** Необходимо тщательно следить за тем, чтобы клонирование было именно глубоким там, где это требуется, иначе изменения в копии могут повлиять на оригинал.
 
-Prototype особенно полезен в Python благодаря встроенной поддержке копирования объектов, что делает его реализацию более простой по сравнению с некоторыми другими языками.
+## Области применения
+
+1. **Паттерны проектирования** (реализация механизмов кэширования объектов, снижение связанности модулей при создании сложных структур)
+2. **Игровая разработка** (быстрое создание множества одинаковых врагов, снарядов или частиц с небольшими вариациями параметров)

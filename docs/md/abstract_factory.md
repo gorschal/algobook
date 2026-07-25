@@ -1,38 +1,64 @@
 ---
-tags: [Патерны проектирования]
+title: Абстрактная фабрика (Abstract Factory)
+description: Порождающий паттерн проектирования, создающий семейства связанных объектов без указания конкретных классов.
+date: 2026-07-19
+tags:
+  - "Паттерны проектирования"
 ---
 
-# Паттерн Abstract Factory (Абстрактная фабрика)
+# Абстрактная фабрика (Abstract Factory)
 
 Абстрактная фабрика — это порождающий паттерн проектирования, который позволяет создавать семейства связанных объектов, не привязываясь к конкретным классам создаваемых объектов.
 
-## Основные концепции
+## Основные принципы
 
-1. **Абстрактная фабрика** - интерфейс для создания семейств связанных или зависимых объектов
-2. **Конкретная фабрика** - реализует методы абстрактной фабрики, создавая конкретные объекты
-3. **Абстрактный продукт** - объявляет интерфейс для типа продукта
-4. **Конкретный продукт** - определяет объект продукта, создаваемый соответствующей конкретной фабрикой
+Паттерн определяет интерфейс для создания всех доступных типов продуктов. Его конкретные реализации (конкретные фабрики) создают продукты определённой вариации. Клиентский код работает с фабриками и продуктами только через абстрактные интерфейсы.
 
-## Когда использовать
+### Математическая формулировка
 
-- Когда система должна быть независимой от процесса создания объектов
-- Когда система должна конфигурироваться одним из множества семейств объектов
-- Когда семейства связанных объектов должны использоваться вместе
-- Когда вы хотите предоставить библиотеку классов, раскрывая только их интерфейсы
+Для выбора нужной фабрики используется функция выбора:
 
-## Преимущества
+$$
+F(context) = \begin{cases} ConcreteFactory_1 & \text{если } context == Windows \\ ConcreteFactory_2 & \text{если } context == MacOS \end{cases}
+$$
 
-- Изолирует конкретные классы
-- Упрощает замену семейств продуктов
-- Гарантирует сочетаемость продуктов
-- Поддерживает принцип открытости/закрытости
+### Блок-схема
 
-## Недостатки
+```mermaid
+classDiagram
+    class GUIFactory {
+        <<interface>>
+        +createButton() Button
+        +createCheckbox() Checkbox
+    }
+    class WindowsFactory {
+        +createButton() WindowsButton
+        +createCheckbox() WindowsCheckbox
+    }
+    class MacOSFactory {
+        +createButton() MacOSButton
+        +createCheckbox() MacOSCheckbox
+    }
+    class Button {
+        <<interface>>
+        +render()
+    }
+    class WindowsButton {
+        +render()
+    }
+    class MacOSButton {
+        +render()
+    }
 
-- Сложность добавления новых видов продуктов
-- Может привести к созданию большого числа классов
+    GUIFactory <|.. WindowsFactory
+    GUIFactory <|.. MacOSFactory
+    Button <|.. WindowsButton
+    Button <|.. MacOSButton
+```
 
-## Пример 1: Кроссплатформенные UI элементы
+## Пример реализации на Python
+
+В следующем примере реализуется система создания UI-компонентов для разных операционных систем.
 
 ```python
 from abc import ABC, abstractmethod
@@ -40,31 +66,31 @@ from abc import ABC, abstractmethod
 # Абстрактные продукты
 class Button(ABC):
     @abstractmethod
-    def render(self):
+    def render(self) -> str:
         pass
 
 class Checkbox(ABC):
     @abstractmethod
-    def render(self):
+    def render(self) -> str:
         pass
 
 # Конкретные продукты для Windows
 class WindowsButton(Button):
-    def render(self):
-        return "Windows Button"
+    def render(self) -> str:
+        return "[Windows Button]"
 
 class WindowsCheckbox(Checkbox):
-    def render(self):
-        return "Windows Checkbox"
+    def render(self) -> str:
+        return "[Windows Checkbox]"
 
 # Конкретные продукты для MacOS
 class MacOSButton(Button):
-    def render(self):
-        return "MacOS Button"
+    def render(self) -> str:
+        return "(MacOS Button)"
 
 class MacOSCheckbox(Checkbox):
-    def render(self):
-        return "MacOS Checkbox"
+    def render(self) -> str:
+        return "(MacOS Checkbox)"
 
 # Абстрактная фабрика
 class GUIFactory(ABC):
@@ -96,167 +122,28 @@ def client_code(factory: GUIFactory):
     button = factory.create_button()
     checkbox = factory.create_checkbox()
 
-    print(button.render())
-    print(checkbox.render())
+    print(f"Кнопка: {button.render()}")
+    print(f"Чекбокс: {checkbox.render()}")
 
-# Использование
-print("Windows UI:")
-client_code(WindowsFactory())
+if __name__ == "__main__":
+    # Создаем фабрику для Windows
+    print("Создание UI для Windows:")
+    client_code(WindowsFactory())
 
-print("\nMacOS UI:")
-client_code(MacOSFactory())
+    print("\nСоздание UI для MacOS:")
+    # Создаем фабрику для MacOS
+    client_code(MacOSFactory())
 ```
 
-## Пример 2: Мебель разных стилей
+## Достоинства и недостатки
 
-```python
-from abc import ABC, abstractmethod
+**Достоинства:**
 
-# Абстрактные продукты
-class Chair(ABC):
-    @abstractmethod
-    def sit_on(self):
-        pass
+1. **Изоляция конкретных классов:** Клиентский код работает только с абстрактными интерфейсами, не зная о реализации.
+2. **Гарантия сочетаемости продуктов:** Все продукты, созданные одной фабрикой, принадлежат одному семейству и совместимы друг с другом.
+3. **Принцип открытости/закрытости:** Можно добавлять новые варианты продуктов, не изменяя существующий клиентский код.
 
-class Sofa(ABC):
-    @abstractmethod
-    def lie_on(self):
-        pass
+**Недостатки:**
 
-# Конкретные продукты в стиле Викторианский
-class VictorianChair(Chair):
-    def sit_on(self):
-        return "Сидим на викторианском стуле"
-
-class VictorianSofa(Sofa):
-    def lie_on(self):
-        return "Лежим на викторианском диване"
-
-# Конкретные продукты в стиле Модерн
-class ModernChair(Chair):
-    def sit_on(self):
-        return "Сидим на современном стуле"
-
-class ModernSofa(Sofa):
-    def lie_on(self):
-        return "Лежим на современном диване"
-
-# Абстрактная фабрика
-class FurnitureFactory(ABC):
-    @abstractmethod
-    def create_chair(self) -> Chair:
-        pass
-
-    @abstractmethod
-    def create_sofa(self) -> Sofa:
-        pass
-
-# Конкретные фабрики
-class VictorianFurnitureFactory(FurnitureFactory):
-    def create_chair(self) -> Chair:
-        return VictorianChair()
-
-    def create_sofa(self) -> Sofa:
-        return VictorianSofa()
-
-class ModernFurnitureFactory(FurnitureFactory):
-    def create_chair(self) -> Chair:
-        return ModernChair()
-
-    def create_sofa(self) -> Sofa:
-        return ModernSofa()
-
-# Клиентский код
-def furnish_room(factory: FurnitureFactory):
-    chair = factory.create_chair()
-    sofa = factory.create_sofa()
-
-    print(chair.sit_on())
-    print(sofa.lie_on())
-
-# Использование
-print("Викторианская комната:")
-furnish_room(VictorianFurnitureFactory())
-
-print("\nСовременная комната:")
-furnish_room(ModernFurnitureFactory())
-```
-
-## Пример 3: Разные типы документов
-
-```python
-from abc import ABC, abstractmethod
-
-# Абстрактные продукты
-class Document(ABC):
-    @abstractmethod
-    def open(self):
-        pass
-
-class Spreadsheet(ABC):
-    @abstractmethod
-    def calculate(self):
-        pass
-
-# Конкретные продукты для Microsoft Office
-class WordDocument(Document):
-    def open(self):
-        return "Opening Word document"
-
-class ExcelSpreadsheet(Spreadsheet):
-    def calculate(self):
-        return "Calculating in Excel"
-
-# Конкретные продукты для Google Docs
-class GoogleDoc(Document):
-    def open(self):
-        return "Opening Google Doc"
-
-class GoogleSheet(Spreadsheet):
-    def calculate(self):
-        return "Calculating in Google Sheets"
-
-# Абстрактная фабрика
-class OfficeSuiteFactory(ABC):
-    @abstractmethod
-    def create_document(self) -> Document:
-        pass
-
-    @abstractmethod
-    def create_spreadsheet(self) -> Spreadsheet:
-        pass
-
-# Конкретные фабрики
-class MicrosoftOfficeFactory(OfficeSuiteFactory):
-    def create_document(self) -> Document:
-        return WordDocument()
-
-    def create_spreadsheet(self) -> Spreadsheet:
-        return ExcelSpreadsheet()
-
-class GoogleDocsFactory(OfficeSuiteFactory):
-    def create_document(self) -> Document:
-        return GoogleDoc()
-
-    def create_spreadsheet(self) -> Spreadsheet:
-        return GoogleSheet()
-
-# Клиентский код
-def work_with_documents(factory: OfficeSuiteFactory):
-    doc = factory.create_document()
-    sheet = factory.create_spreadsheet()
-
-    print(doc.open())
-    print(sheet.calculate())
-
-# Использование
-print("Microsoft Office:")
-work_with_documents(MicrosoftOfficeFactory())
-
-print("\nGoogle Docs:")
-work_with_documents(GoogleDocsFactory())
-```
-
-## Заключение
-
-Паттерн Abstract Factory полезен, когда ваша система должна быть независимой от того, как создаются, компонуются и представляются продукты, или когда вам нужно создавать семейства связанных продуктов. Он инкапсулирует выбор конкретных классов и контролирует их создание.
+1. **Сложность расширения:** Добавление нового типа продукта требует изменения интерфейса фабрики и всех её подклассов.
+2. **Увеличение числа классов:** Введение множества абстракций и реализаций может привести к избыточности кода.

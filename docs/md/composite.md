@@ -1,243 +1,167 @@
 ---
-tags: [Патерны проектирования]
+title: Паттерн Composite (Компоновщик)
+description: Структурный паттерн, позволяющий группировать объекты в древовидные структуры и работать с ними как с единым объектом.
+date: 2026-07-25
+tags:
+  - "Паттерны проектирования"
 ---
 
 # Паттерн Composite (Компоновщик)
 
-Composite - это структурный паттерн проектирования, который позволяет сгруппировать множество объектов в древовидную структуру, а затем работать с ней так, как будто это единый объект.
+Composite (Компоновщик) — это структурный паттерн проектирования, который позволяет компоновать объекты в древовидные структуры для представления иерархий «часть-целое». Паттерн позволяет клиентам единообразно обрабатывать как отдельные объекты, так и группы объектов.
 
-Основная идея: клиенты могут единообразно обрабатывать как отдельные объекты, так и их композиции.
+## Подробное описание
 
-## Когда использовать
+Паттерн решает задачу, когда клиентскому коду не нужно различать простые элементы (листья) и сложные контейнеры (композиции). Это упрощает архитектуру приложения, избавляя от необходимости писать условные проверки типов объектов перед выполнением операций.
 
-- Когда вам нужно представить древовидную структуру объектов
-- Когда вы хотите, чтобы клиенты могли единообразно работать как с простыми, так и со сложными компонентами
+**Постановка задачи:**
+Необходимо реализовать систему, где отдельные объекты и их композиции могут использоваться взаимозаменяемо. Например, в графическом редакторе команда «переместить» должна работать одинаково для одной фигуры и для группы фигур.
 
-## Структура
+**Входные и выходные данные:**
 
+- Вход: Клиентский запрос к компоненту интерфейса.
+- Выход: Выполнение операции либо самим объектом (если это лист), либо рекурсивный обход всех дочерних элементов (если это композиция).
+
+**Ключевая идея:**
+Определить общий интерфейс для простых и составных объектов. Составной объект хранит коллекцию дочерних компонентов и делегирует им выполнение операций, предварительно или дополнительно выполняя свои действия.
+
+## Основные принципы
+
+### Структура паттерна
+
+Паттерн состоит из трех основных участников:
+
+1. **Component (Компонент)** — объявляет общий интерфейс для всех объектов в композиции.
+2. **Leaf (Лист)** — представляет конечные объекты композиции. Лист не имеет потомков.
+3. **Composite (Композиция)** — хранит коллекцию дочерних компонентов и реализует операции управления ими.
+
+```mermaid
+classDiagram
+    class Component {
+        <<interface>>
+        +operation()
+    }
+    class Leaf {
+        +operation()
+    }
+    class Composite {
+        -children: List~Component~
+        +add(Component)
+        +remove(Component)
+        +getChild(int)
+        +operation()
+    }
+    Component <|-- Leaf
+    Component <|-- Composite
+    Composite o-- Component
 ```
-Component (абстрактный)
-│
-├── Leaf (лист)
-└── Composite (композит)
-    ├── children: Component[]
-    └── operation()
-```
 
-## Примеры реализации на Python
+### Математическая модель рекурсии
 
-### Пример 1: Графические примитивы
+Операция над композицией часто выражается через рекурсивную сумму операций над её элементами. Если $O(C)$ — операция над компонентом $C$, то для композиции $K$ с дочерними элементами $c_1, c_2, ..., c_n$:
+
+$$
+O(K) = f(O(c_1), O(c_2), ..., O(c_n))
+$$
+
+Где:
+
+- $O(K)$ — результат выполнения операции над композитом.
+- $f$ — функция агрегации результатов (например, сумма, конкатенация или последовательное выполнение).
+- $c_i$ — дочерние компоненты (которые могут быть как листьями, так другими композитами).
+
+Для листа $L$ операция является базовым случаем:
+
+$$
+O(L) = \text{primitive\_action}
+$$
+
+## Пример реализации на Python
+
+В данном примере реализована файловая система, где файлы являются листьями, а папки — композициями.
 
 ```python
 from abc import ABC, abstractmethod
 from typing import List
 
-# Абстрактный компонент
-class Graphic(ABC):
-    @abstractmethod
-    def draw(self):
-        pass
-
-    @abstractmethod
-    def add(self, graphic):
-        pass
-
-    @abstractmethod
-    def remove(self, graphic):
-        pass
-
-    @abstractmethod
-    def get_child(self, index):
-        pass
-
-# Лист (простой компонент)
-class Circle(Graphic):
-    def draw(self):
-        print("Рисуем круг")
-
-    def add(self, graphic):
-        raise NotImplementedError("Нельзя добавить к кругу")
-
-    def remove(self, graphic):
-        raise NotImplementedError("Нельзя удалить из круга")
-
-    def get_child(self, index):
-        raise NotImplementedError("У круга нет потомков")
-
-# Лист (простой компонент)
-class Square(Graphic):
-    def draw(self):
-        print("Рисуем квадрат")
-
-    def add(self, graphic):
-        raise NotImplementedError("Нельзя добавить к квадрату")
-
-    def remove(self, graphic):
-        raise NotImplementedError("Нельзя удалить из квадрата")
-
-    def get_child(self, index):
-        raise NotImplementedError("У квадрата нет потомков")
-
-# Композит (составной компонент)
-class CompositeGraphic(Graphic):
-    def __init__(self):
-        self._children: List[Graphic] = []
-
-    def draw(self):
-        print("Рисуем композитную графику:")
-        for child in self._children:
-            child.draw()
-
-    def add(self, graphic):
-        self._children.append(graphic)
-
-    def remove(self, graphic):
-        self._children.remove(graphic)
-
-    def get_child(self, index):
-        return self._children[index]
-
-# Использование
-circle1 = Circle()
-circle2 = Circle()
-square = Square()
-
-composite1 = CompositeGraphic()
-composite1.add(circle1)
-composite1.add(circle2)
-
-composite2 = CompositeGraphic()
-composite2.add(square)
-composite2.add(composite1)
-
-composite2.draw()
-```
-
-### Пример 2: Файловая система
-
-```python
-from abc import ABC, abstractmethod
-from typing import List
-
-# Компонент
+# 1. Компонент: объявляет общий интерфейс
 class FileSystemComponent(ABC):
+    def __init__(self, name: str):
+        self.name = name
+
     @abstractmethod
-    def show_info(self):
+    def show_info(self, indent: int = 0):
+        """Отображает информацию о компоненте"""
         pass
 
-# Лист (файл)
+    def add(self, component: 'FileSystemComponent'):
+        """По умолчанию не поддерживается для листьев"""
+        raise NotImplementedError(f"Нельзя добавить элемент в {self.__class__.__name__}")
+
+    def remove(self, component: 'FileSystemComponent'):
+        """По умолчанию не поддерживается для листьев"""
+        raise NotImplementedError(f"Нельзя удалить элемент из {self.__class__.__name__}")
+
+# 2. Лист: конечный элемент (Файл)
 class File(FileSystemComponent):
-    def __init__(self, name, size):
-        self.name = name
+    def __init__(self, name: str, size: int):
+        super().__init__(name)
         self.size = size
 
-    def show_info(self):
-        print(f"Файл: {self.name}, Размер: {self.size} KB")
+    def show_info(self, indent: int = 0):
+        prefix = "  " * indent
+        print(f"{prefix}📄 Файл: {self.name}, Размер: {self.size} KB")
 
-# Композит (папка)
+# 3. Композиция: контейнер (Папка)
 class Directory(FileSystemComponent):
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, name: str):
+        super().__init__(name)
         self.children: List[FileSystemComponent] = []
 
-    def add(self, component):
+    def add(self, component: FileSystemComponent):
         self.children.append(component)
 
-    def remove(self, component):
+    def remove(self, component: FileSystemComponent):
         self.children.remove(component)
 
-    def show_info(self):
-        print(f"Папка: {self.name}")
-        print("Содержимое:")
+    def show_info(self, indent: int = 0):
+        prefix = "  " * indent
+        print(f"{prefix}📁 Папка: {self.name}")
+
+        # Рекурсивный вызов для всех дочерних элементов
         for child in self.children:
-            child.show_info()
+            child.show_info(indent + 1)
 
-# Использование
-file1 = File("document.txt", 100)
-file2 = File("image.jpg", 500)
-file3 = File("data.csv", 50)
+if __name__ == "__main__":
+    # Создаем структуру файловой системы
+    root = Directory("ProjectRoot")
 
-dir1 = Directory("Documents")
-dir1.add(file1)
-dir1.add(file2)
+    src_dir = Directory("src")
+    src_dir.add(File("main.py", 5))
+    src_dir.add(File("utils.py", 2))
 
-dir2 = Directory("Project")
-dir2.add(file3)
-dir2.add(dir1)
+    docs_dir = Directory("docs")
+    docs_dir.add(File("readme.md", 10))
 
-dir2.show_info()
+    # Вкладываем папки друг в друга
+    root.add(src_dir)
+    root.add(docs_dir)
+    root.add(File("config.yaml", 1))
+
+    # Клиентский код работает единообразно
+    print("Структура проекта:")
+    root.show_info()
 ```
 
-### Пример 3: Меню ресторана
+## Достоинства и недостатки
 
-```python
-from abc import ABC, abstractmethod
-from typing import List
+**Достоинства:**
 
-# Компонент
-class MenuComponent(ABC):
-    @abstractmethod
-    def print(self):
-        pass
-
-# Лист (пункт меню)
-class MenuItem(MenuComponent):
-    def __init__(self, name, price):
-        self.name = name
-        self.price = price
-
-    def print(self):
-        print(f"  {self.name} - ${self.price}")
-
-# Композит (меню)
-class Menu(MenuComponent):
-    def __init__(self, name):
-        self.name = name
-        self.children: List[MenuComponent] = []
-
-    def add(self, component):
-        self.children.append(component)
-
-    def print(self):
-        print(f"\n{self.name}")
-        print("----------------")
-        for child in self.children:
-            child.print()
-
-# Использование
-breakfast_menu = Menu("Завтрак")
-breakfast_menu.add(MenuItem("Омлет", 5.99))
-breakfast_menu.add(MenuItem("Блинчики", 4.50))
-
-dinner_menu = Menu("Обед")
-dinner_menu.add(MenuItem("Стейк", 12.99))
-dinner_menu.add(MenuItem("Салат", 7.50))
-
-dessert_menu = Menu("Десерты")
-dessert_menu.add(MenuItem("Чизкейк", 4.99))
-dessert_menu.add(MenuItem("Мороженое", 3.50))
-
-main_menu = Menu("Главное меню")
-main_menu.add(breakfast_menu)
-main_menu.add(dinner_menu)
-main_menu.add(dessert_menu)
-
-main_menu.print()
-```
-
-## Преимущества и недостатки
-
-**Преимущества:**
-
-- Упрощает архитектуру клиентского кода
-- Облегчает добавление новых типов компонентов
-- Позволяет работать с древовидными структурами
+1. **Упрощение клиентского кода.** Клиенту не нужно знать, работает ли он с простым объектом или сложной структурой. Интерфейс един.
+2. **Открытость для расширения.** Легко добавлять новые типы компонентов (листьев или композиций), не меняя существующий код, благодаря полиморфизму.
+3. **Гибкость структуры.** Позволяет создавать сложные древовидные структуры любой глубины.
 
 **Недостатки:**
 
-- Может сделать дизайн слишком общим (иногда сложно ограничить компоненты)
-- Может быть сложно обеспечить соблюдение ограничений для листьев
-
-## Заключение
-
-Паттерн Composite особенно полезен, когда вам нужно работать с иерархическими структурами, где одни и те же операции могут быть применены как к отдельным объектам, так и к их группам. В Python его реализация довольно проста благодаря динамической типизации и поддержке абстрактных базовых классов.
+1. **Избыточность дизайна.** Если иерархия не нужна, использование паттерна может усложнить код без пользы.
+2. **Сложность ограничения типов.** В общем интерфейсе компонента часто приходится объявлять методы управления детьми (`add`, `remove`), которые не имеют смысла для листьев. Это может привести к ошибкам времени выполнения, если не использовать исключения или пустые реализации (как в примере выше).

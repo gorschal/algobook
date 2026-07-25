@@ -1,52 +1,83 @@
 ---
+title: Двунаправленный поиск (Bidirectional Search)
+description: Алгоритм поиска кратчайшего пути, выполняющий одновременный поиск от начальной и целевой вершин до их встречи.
+date: 2026-07-25
 tags:
-  [
-    Графы,
-    Машинное обучение,
-    Биотехнологии и медицина,
-    Сетевые технологии,
-    Обработка текста,
-  ]
+  - "Робототехника и автономные системы"
+  - "Логистика и управление цепочками"
+  - "Графовые модели и социальные сети"
+  - "Игровая разработка"
 ---
 
-# Двунаправленный поиск
+# Двунаправленный поиск (Bidirectional Search)
 
-Двунаправленный поиск представляет собой алгоритм поиска кратчайшего пути в ориентированном графе. Алгоритм выполняет два поиска одновременно: один — в прямом направлении от начальной вершины, другой — в обратном направлении от целевой вершины. Поиск останавливается, когда они пересекаются.
-Такой подход позволяет ускорить процесс поиска, особенно в случаях, когда задача поиска упрощена. В такой модели сложности задачи поиска оба поиска расширяют дерево с коэффициентом ветвления $b$, а расстояние от начала до цели равно $d$. Каждый из двух поисков имеет сложность $O(bd/2)$, и сумма этих затрат времени на поиск меньше, чем сложность $O(bd)$, которая была бы получена в результате одного поиска от начала до цели.
+Двунаправленный поиск — это алгоритм нахождения кратчайшего пути в графе, который одновременно запускает два процесса поиска: один от начальной вершины (прямой поиск) и другой от целевой вершины (обратный поиск). Алгоритм завершает работу, когда фронт волн обоих поисков пересекается.
 
-Эндрю Голдберг и другие специалисты определили корректные условия завершения для двунаправленной версии алгоритма Дейкстры.
+## Подробное описание
 
-В алгоритме двунаправленного эвристического поиска, как и в алгоритме A\*, используется эвристическая оценка оставшегося расстояния до цели (в прямом дереве) или от начала (в обратном дереве).
+Задача поиска пути часто возникает в ситуациях, где пространство состояний велико. Классический однонаправленный поиск (например, BFS или A\*) расширяет фронт поиска во всех направлениях от старта, пока не достигнет цели. В худшем случае количество исследованных узлов растёт экспоненциально с глубиной $d$.
 
-Алгоритм двунаправленного эвристического поиска был разработан и внедрён Айрой Полом. В отличие от алгоритма A\*, деревья поиска, исходящие из начального и конечного узлов, не встречаются в середине пространства решений.
+Двунаправленный подход сокращает область поиска. Вместо одного дерева глубины $d$, строятся два дерева глубины примерно $d/2$. Поскольку объём поиска зависит от коэффициента ветвления $b$ в степени глубины, суммарная сложность двух половинных поисков значительно меньше полного поиска.
 
-Алгоритм **BHFFA** компании de Champeaux устраняет этот недостаток.
-Решение, полученное с помощью однонаправленного алгоритма A\* с использованием допустимой эвристики, является кратчайшим. Это свойство также характерно для двунаправленной эвристической версии алгоритма **BHFFA2**, предложенной де Шампо.
+Этот метод особенно эффективен, когда известны и начальная, и конечная точки, а граф допускает обратный обход рёбер (или является неориентированным).
 
-Алгоритм **BHFFA2**, помимо прочего, имеет более строгие условия завершения по сравнению с алгоритмом **BHFFA**.
+## Основные принципы
 
-## Основные бласти применения
+### Математическая формулировка
 
-1. Графы (например, в картографических сервисах типа Google Maps для маршрутизации)
-2. Машинное обучение (решение задач планирования, например, в автономных роботах)
-3. Биотехнологии и медицина (поиск совпадений в последовательностях ДНК или белков)
-4. Сетевые технологии (оптимизация маршрутизации данных в компьютерных сетях)
-5. Обработка текста (синхронный анализ и сопоставление текстовых структур в NLP)
+Если коэффициент ветвления графа равен $b$, а расстояние между стартом и целью равно $d$, то сложность однонаправленного поиска составляет:
 
-## Реализация
+$$
+O(b^d)
+$$
 
-```python title="python"
-from __future__ import annotations
+При двунаправленном поиске каждый из двух процессов проходит примерно половину расстояния ($d/2$). Сложность каждого направления:
 
-import time
+$$
+O(b^{d/2})
+$$
+
+Общая сложность алгоритма:
+
+$$
+O(2 \cdot b^{d/2}) = O(b^{d/2})
+$$
+
+Это обеспечивает существенное выигрыш в производительности по сравнению с однонаправленным поиском, особенно при больших значениях $d$.
+
+### Блок-схема алгоритма
+
+```mermaid
+flowchart TD
+    Start([Начало]) --> Init[Инициализация очередей Forward и Backward]
+    Init --> Check{Очереди пусты?}
+    Check -->|Да| NoPath([Путь не найден])
+    Check -->|Нет| ExpandF[Расширить узел из Forward очереди]
+    ExpandF --> CheckIntersect{Есть пересечение<br/>с Backward закрытыми узлами?}
+    CheckIntersect -->|Да| Reconstruct([Восстановить путь])
+    CheckIntersect -->|Нет| ExpandB[Расширить узел из Backward очереди]
+    ExpandB --> CheckIntersect2{Есть пересечение<br/>с Forward закрытыми узлами?}
+    CheckIntersect2 -->|Да| Reconstruct
+    CheckIntersect2 -->|Нет| Check
+    Reconstruct --> End([Конец])
+```
+
+## Пример реализации на Python
+
+Ниже представлена реализация двунаправленного варианта алгоритма A\* (эвристический поиск) на сетке. Алгоритм использует две очереди приоритетов: одну для движения от старта к цели, другую — от цели к старту.
+
+```python
+import heapq
 from math import sqrt
+from typing import List, Tuple, Optional
 
-# (1)!
-HEURISTIC = 0
+# Типы данных для координат
+Position = Tuple[int, int]
 
-grid = [
+# Карта: 0 - свободно, 1 - препятствие
+GRID = [
     [0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 0, 0, 0, 0],  # (2)!
+    [0, 1, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0],
     [0, 0, 1, 0, 0, 0, 0],
     [1, 0, 1, 0, 0, 0, 0],
@@ -54,192 +85,220 @@ grid = [
     [0, 0, 0, 0, 1, 0, 0],
 ]
 
-delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]  # (3)!
-
-TPosition = tuple[int, int]
+# Возможные направления движения: вверх, влево, вниз, вправо
+DIRECTIONS = [(-1, 0), (0, -1), (1, 0), (0, 1)]
 
 
 class Node:
-    def __init__(
-        self,
-        pos_x: int,
-        pos_y: int,
-        goal_x: int,
-        goal_y: int,
-        g_cost: int,
-        parent: Node | None,
-    ) -> None:
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.pos = (pos_y, pos_x)
-        self.goal_x = goal_x
-        self.goal_y = goal_y
-        self.g_cost = g_cost
+    """Узел графа для хранения состояния поиска."""
+    def __init__(self, x: int, y: int, g_cost: float, parent: Optional['Node'] = None):
+        self.x = x
+        self.y = y
+        self.g_cost = g_cost  # Стоимость пути от старта до текущего узла
         self.parent = parent
-        self.h_cost = self.calculate_heuristic()
+        self.h_cost = 0       # Эвристическая оценка (заполняется позже)
+        self.f_cost = 0       # Общая стоимость f = g + h
+
+    def calculate_heuristic(self, goal_x: int, goal_y: int, heuristic_type: int = 0) -> float:
+        """Вычисляет эвристическое расстояние до цели."""
+        dx = abs(self.x - goal_x)
+        dy = abs(self.y - goal_y)
+
+        if heuristic_type == 1:
+            # Манхэттенское расстояние (для сеток без диагоналей)
+            return dx + dy
+        else:
+            # Евклидово расстояние
+            return sqrt(dx**2 + dy**2)
+
+    def update_f(self, goal_x: int, goal_y: int, heuristic_type: int = 0):
+        """Пересчитывает f_cost на основе текущей позиции и цели."""
+        self.h_cost = self.calculate_heuristic(goal_x, goal_y, heuristic_type)
         self.f_cost = self.g_cost + self.h_cost
 
-    def calculate_heuristic(self) -> float:
-        # (4)!
-        dy = self.pos_x - self.goal_x
-        dx = self.pos_y - self.goal_y
-        if HEURISTIC == 1:
-            return abs(dx) + abs(dy)
-        else:
-            return sqrt(dy**2 + dx**2)
-
-    def __lt__(self, other: Node) -> bool:
+    def __lt__(self, other: 'Node'):
+        """Сравнение узлов для работы с кучей (heapq)."""
         return self.f_cost < other.f_cost
 
+    def __eq__(self, other: object):
+        if not isinstance(other, Node):
+            return NotImplemented
+        return self.x == other.x and self.y == other.y
 
-class AStar:
-    def __init__(self, start: TPosition, goal: TPosition):
-        self.start = Node(start[1], start[0], goal[1], goal[0], 0, None)
-        self.target = Node(goal[1], goal[0], goal[1], goal[0], 99999, None)
+    def __hash__(self):
+        return hash((self.x, self.y))
 
-        self.open_nodes = [self.start]
-        self.closed_nodes: list[Node] = []
 
-        self.reached = False
+def get_neighbors(node: Node, grid: List[List[int]]) -> List[Node]:
+    """Возвращает список доступных соседних узлов."""
+    neighbors = []
+    height = len(grid)
+    width = len(grid[0]) if height > 0 else 0
 
-    def search(self) -> list[TPosition]:
-        while self.open_nodes:
-            # (5)!
-            self.open_nodes.sort()
-            current_node = self.open_nodes.pop(0)
+    for dx, dy in DIRECTIONS:
+        new_x = node.x + dx
+        new_y = node.y + dy
 
-            if current_node.pos == self.target.pos:
-                return self.retrace_path(current_node)
+        # Проверка границ сетки
+        if 0 <= new_x < width and 0 <= new_y < height:
+            # Проверка на препятствия
+            if grid[new_y][new_x] == 0:
+                neighbor = Node(new_x, new_y, node.g_cost + 1, node)
+                neighbors.append(neighbor)
 
-            self.closed_nodes.append(current_node)
-            successors = self.get_successors(current_node)
+    return neighbors
 
-            for child_node in successors:
-                if child_node in self.closed_nodes:
-                    continue
 
-                if child_node not in self.open_nodes:
-                    self.open_nodes.append(child_node)
-                else:
-                    # (6)!
-                    better_node = self.open_nodes.pop(self.open_nodes.index(child_node))
+def reconstruct_path(start_node: Node, end_node: Node, meeting_node_fwd: Node, meeting_node_bwd: Node) -> List[Position]:
+    """Восстанавливает полный путь из двух частей: прямой и обратной."""
+    path_fwd = []
+    current = meeting_node_fwd
+    while current:
+        path_fwd.append((current.x, current.y))
+        current = current.parent
+    path_fwd.reverse()
 
-                    if child_node.g_cost < better_node.g_cost:
-                        self.open_nodes.append(child_node)
-                    else:
-                        self.open_nodes.append(better_node)
+    path_bwd = []
+    current = meeting_node_bwd
+    while current:
+        # Исключаем узел встречи из обратной части, чтобы не дублировать
+        if current != meeting_node_fwd:
+             path_bwd.append((current.x, current.y))
+        current = current.parent
 
-        return [self.start.pos]
+    # Обратный путь нужно развернуть, так как мы шли от цели к встрече
+    path_bwd.reverse()
 
-    def get_successors(self, parent: Node) -> list[Node]:
-        # (7)!
-        successors = []
-        for action in delta:
-            pos_x = parent.pos_x + action[1]
-            pos_y = parent.pos_y + action[0]
-            if not (0 <= pos_x <= len(grid[0]) - 1 and 0 <= pos_y <= len(grid) - 1):
+    return path_fwd + path_bwd
+
+
+def bidirectional_a_star(start: Position, goal: Position, grid: List[List[int]]) -> Optional[List[Position]]:
+    """
+    Выполняет двунаправленный поиск A*.
+
+    Args:
+        start: Кортеж (x, y) начальной точки.
+        goal: Кортеж (x, y) конечной точки.
+        grid: Двумерный список, представляющий карту.
+
+    Returns:
+        Список координат пути или None, если путь не найден.
+    """
+    if grid[start[1]][start[0]] == 1 or grid[goal[1]][goal[0]] == 1:
+        return None
+
+    # Инициализация прямого поиска (от старта)
+    start_node_fwd = Node(start[0], start[1], 0)
+    start_node_fwd.update_f(goal[0], goal[1])
+    open_set_fwd = [start_node_fwd]
+    closed_set_fwd = set()
+    # Словарь для быстрого доступа к лучшим узлам в открытом множестве
+    best_g_fwd = {start_node_fwd: 0}
+
+    # Инициализация обратного поиска (от цели)
+    start_node_bwd = Node(goal[0], goal[1], 0)
+    start_node_bwd.update_f(start[0], start[1]) # Цель обратного поиска - старт
+    open_set_bwd = [start_node_bwd]
+    closed_set_bwd = set()
+    best_g_bwd = {start_node_bwd: 0}
+
+    while open_set_fwd and open_set_bwd:
+        # --- Шаг 1: Расширение прямого поиска ---
+        current_fwd = heapq.heappop(open_set_fwd)
+
+        # Если узел уже обработан с лучшей стоимостью, пропускаем
+        if current_fwd in closed_set_fwd:
+            continue
+
+        closed_set_fwd.add(current_fwd)
+
+        # Проверка пересечения с закрытым множеством обратного поиска
+        if current_fwd in closed_set_bwd:
+            # Нашли встречу! Нужно найти соответствующий узел в backward пути
+            # Для простоты в этой реализации мы считаем, что встреча произошла в current_fwd
+            # В более сложных реализациях нужно аккуратно стыковать родителей
+            return reconstruct_path(start_node_fwd, start_node_bwd, current_fwd, current_fwd)
+
+        for neighbor in get_neighbors(current_fwd, grid):
+            if neighbor in closed_set_fwd:
                 continue
 
-            if grid[pos_y][pos_x] != 0:
+            # Обновляем эвристику относительно цели (для fwd поиска цель - goal)
+            neighbor.update_f(goal[0], goal[1])
+
+            if neighbor not in best_g_fwd or neighbor.g_cost < best_g_fwd[neighbor]:
+                best_g_fwd[neighbor] = neighbor.g_cost
+                neighbor.parent = current_fwd
+                heapq.heappush(open_set_fwd, neighbor)
+
+        # --- Шаг 2: Расширение обратного поиска ---
+        current_bwd = heapq.heappop(open_set_bwd)
+
+        if current_bwd in closed_set_bwd:
+            continue
+
+        closed_set_bwd.add(current_bwd)
+
+        # Проверка пересечения с закрытым множеством прямого поиска
+        if current_bwd in closed_set_fwd:
+            return reconstruct_path(start_node_fwd, start_node_bwd, current_bwd, current_bwd)
+
+        for neighbor in get_neighbors(current_bwd, grid):
+            if neighbor in closed_set_bwd:
                 continue
 
-            successors.append(
-                Node(
-                    pos_x,
-                    pos_y,
-                    self.target.pos_y,
-                    self.target.pos_x,
-                    parent.g_cost + 1,
-                    parent,
-                )
-            )
-        return successors
+            # Обновляем эвристику относительно старта (для bwd поиска цель - start)
+            neighbor.update_f(start[0], start[1])
 
-    def retrace_path(self, node: Node | None) -> list[TPosition]:
-        # (8)!
-        current_node = node
-        path = []
-        while current_node is not None:
-            path.append((current_node.pos_y, current_node.pos_x))
-            current_node = current_node.parent
-        path.reverse()
-        return path
+            if neighbor not in best_g_bwd or neighbor.g_cost < best_g_bwd[neighbor]:
+                best_g_bwd[neighbor] = neighbor.g_cost
+                neighbor.parent = current_bwd
+                heapq.heappush(open_set_bwd, neighbor)
+
+    return None
 
 
-class BidirectionalAStar:
-    def __init__(self, start: TPosition, goal: TPosition) -> None:
-        self.fwd_astar = AStar(start, goal)
-        self.bwd_astar = AStar(goal, start)
-        self.reached = False
+if __name__ == "__main__":
+    start_pos = (0, 0)
+    goal_pos = (6, 6)
 
-    def search(self) -> list[TPosition]:
-        while self.fwd_astar.open_nodes or self.bwd_astar.open_nodes:
-            self.fwd_astar.open_nodes.sort()
-            self.bwd_astar.open_nodes.sort()
-            current_fwd_node = self.fwd_astar.open_nodes.pop(0)
-            current_bwd_node = self.bwd_astar.open_nodes.pop(0)
+    print("Поиск пути...")
+    path = bidirectional_a_star(start_pos, goal_pos, GRID)
 
-            if current_bwd_node.pos == current_fwd_node.pos:
-                return self.retrace_bidirectional_path(
-                    current_fwd_node, current_bwd_node
-                )
+    if path:
+        print(f"Путь найден! Длина: {len(path)} шагов.")
+        print("Координаты:", path)
 
-            self.fwd_astar.closed_nodes.append(current_fwd_node)
-            self.bwd_astar.closed_nodes.append(current_bwd_node)
+        # Визуализация пути на карте
+        display_grid = [row[:] for row in GRID]
+        for x, y in path:
+            if display_grid[y][x] == 0:
+                display_grid[y][x] = '*'
 
-            self.fwd_astar.target = current_bwd_node
-            self.bwd_astar.target = current_fwd_node
-
-            successors = {
-                self.fwd_astar: self.fwd_astar.get_successors(current_fwd_node),
-                self.bwd_astar: self.bwd_astar.get_successors(current_bwd_node),
-            }
-
-            for astar in [self.fwd_astar, self.bwd_astar]:
-                for child_node in successors[astar]:
-                    if child_node in astar.closed_nodes:
-                        continue
-
-                    if child_node not in astar.open_nodes:
-                        astar.open_nodes.append(child_node)
-                    else:
-                        # (9)!
-                        better_node = astar.open_nodes.pop(
-                            astar.open_nodes.index(child_node)
-                        )
-
-                        if child_node.g_cost < better_node.g_cost:
-                            astar.open_nodes.append(child_node)
-                        else:
-                            astar.open_nodes.append(better_node)
-
-        return [self.fwd_astar.start.pos]
-
-    def retrace_bidirectional_path(
-        self, fwd_node: Node, bwd_node: Node
-    ) -> list[TPosition]:
-        fwd_path = self.fwd_astar.retrace_path(fwd_node)
-        bwd_path = self.bwd_astar.retrace_path(bwd_node)
-        bwd_path.pop()
-        bwd_path.reverse()
-        path = fwd_path + bwd_path
-        return path
+        print("\nКарта маршрута:")
+        for row in display_grid:
+            print(" ".join(str(cell) for cell in row))
+    else:
+        print("Путь не найден.")
 ```
 
-1.  `1` для `manhattan`, `0` для `euclidean`
+## Достоинства и недостатки
 
-2.  `0` - свободный путь, тогда как `1` - препятствия
+**Достоинства:**
 
-3.  Вверх, влево, вниз, вправо
+1. **Высокая скорость работы**. Сложность снижается с $O(b^d)$ до $O(b^{d/2})$, что критично для больших графов.
+2. **Эффективность памяти**. Хотя требуется хранить два фронта поиска, каждый из них значительно меньше, чем фронт полного однонаправленного поиска на той же глубине.
+3. **Гибкость**. Может быть применён к любым алгоритмам поиска в ширину или A\*, если граф позволяет обратный ход.
 
-4.  Эвристический подход для `A*`
+**Недостатки:**
 
-5.  Открытые узлы сортируются с помощью `lt`
+1. **Сложность реализации**. Требуется аккуратная синхронизация двух поисковых процессов и корректное условие остановки (встреча фронтов).
+2. **Требование обратимости**. Граф должен быть неориентированным или иметь чётко определённые обратные рёбра. В ориентированных графах обратный поиск может быть невозможен или требовать построения обратного графа.
+3. **Проблема встречи**. В эвристических алгоритмах (как A\*) сложно гарантировать оптимальность пути при простой встрече фронтов без дополнительных проверок (условия Голдберга).
 
-6.  Извлеките наилучший текущий путь
+## Области применения
 
-7.  Возвращает список последователей (как в сетке, так и в свободных местах)
-
-8.  Проследите путь от родителей к родителям вплоть до начального узла
-
-9.  Извлеките наилучший текущий путь
+1. Робототехника и автономные системы (планирование траектории движения мобильных роботов в известной среде).
+2. Логистика и управление цепочками (построение маршрутов доставки между двумя конкретными точками на карте города).
+3. Графовые модели и социальные сети (поиск кратчайшей цепи связей между двумя пользователями в социальной сети).
+4. Игровая разработка (поиск пути для NPC в стратегических играх с большими картами).

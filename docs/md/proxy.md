@@ -1,185 +1,171 @@
 ---
-tags: [Патерны проектирования]
+title: Паттерн проектирования Proxy (Заместитель)
+description: Структурный паттерн, предоставляющий объект-заменитель для контроля доступа к другому объекту.
+date: 2026-07-25
+tags:
+  - "Паттерны проектирования"
 ---
 
 # Паттерн Proxy (Заместитель)
 
-Паттерн Proxy (Заместитель) — это структурный паттерн проектирования, который предоставляет объект-заменитель или placeholder для другого объекта. Прокси контролирует доступ к оригинальному объекту, позволяя выполнять действия до или после обращения к нему.
+Паттерн Proxy (Заместитель) — это структурный шаблон проектирования, который предоставляет объект-суррогат или «заместитель» другого объекта. Прокси контролирует доступ к оригинальному объекту, позволяя выполнить какие-то действия до или после передачи запроса оригиналу.
 
-## Основные цели Proxy:
+## Подробное описание
 
-- Контроль доступа к объекту
-- Добавление дополнительной логики перед/после обращения к объекту
-- Ленивая инициализация (отложенное создание объекта)
-- Кеширование результатов
-- Удалённый доступ (например, для объектов в другом адресном пространстве)
+Паттерн решает задачу контроля доступа к объекту без изменения его кода. Он полезен, когда создание объекта требует больших ресурсов (например, загрузка изображения из сети или подключение к базе данных), либо когда необходимо ограничить права доступа, вести логирование операций или реализовать удаленный вызов методов.
 
-## Типы прокси:
+Ключевая идея заключается в том, что прокси реализует тот же интерфейс, что и реальный субъект (Real Subject). Это позволяет клиенту работать с прокси так же, как с реальным объектом, не подозревая о подмене.
 
-- **Virtual Proxy** - откладывает создание ресурсоёмких объектов
-- **Protection Proxy** - контролирует доступ к объекту
-- **Remote Proxy** - представляет объект в другом адресном пространстве
-- **Smart Reference** - добавляет дополнительную логику при обращении к объекту
-- **Caching Proxy** - кеширует результаты запросов
+**Участники паттерна:**
 
-## Примеры на Python
+1. **Subject (Субъект)**: общий интерфейс для RealSubject и Proxy.
+2. **RealSubject (Реальный субъект)**: объект, содержащий основную бизнес-логику.
+3. **Proxy (Заместитель)**: хранит ссылку на RealSubject, контролирует доступ к нему и может выполнять дополнительные операции.
+
+## Принцип работы
+
+Логика работы паттерна строится на делегировании вызовов. Клиент обращается к методам Proxy, который решает, нужно ли создавать реальный объект (в случае ленивой инициализации), проверять права доступа или возвращать данные из кэша.
+
+### Блок-схема взаимодействия
+
+```mermaid
+sequenceDiagram
+    participant Client as Клиент
+    participant Proxy as Proxy
+    participant RealSubject as Реальный объект
+
+    Client->>Proxy: запрос()
+
+    alt Ленивая инициализация / Проверка прав
+        Proxy->>Proxy: проверка условий
+    end
+
+    Proxy->>RealSubject: запрос()
+    RealSubject-->>Proxy: результат
+    Proxy-->>Client: результат
+```
+
+## Пример реализации на Python
+
+Ниже представлены примеры различных типов прокси: Virtual Proxy (ленивая загрузка), Protection Proxy (контроль доступа) и Caching Proxy (кеширование).
 
 ### 1. Virtual Proxy (Ленивая инициализация)
 
+Используется для отложенного создания ресурсоёмких объектов.
+
 ```python
-class LazyImage:
-    def __init__(self, filename):
-        self._filename = filename
-        self._image = None
+class HeavyResource:
+    """Ресурсоёмкий объект, создание которого занимает время."""
+    def __init__(self, name):
+        print(f"Загрузка тяжелого ресурса: {name}")
+        self.name = name
+        # Имитация долгой загрузки
+        import time
+        time.sleep(1)
 
-    def display(self):
-        if self._image is None:
-            print(f"Loading image {self._filename}")
-            self._image = f"Image data for {self._filename}"
-        print(f"Displaying {self._filename}")
-        return self._image
+    def operation(self):
+        return f"Работа с ресурсом {self.name}"
 
-# Использование
-image = LazyImage("photo.jpg")
-# Изображение ещё не загружено
-print(image.display())  # Загружается и отображается
-print(image.display())  # Только отображается (уже загружено)
+class ResourceProxy:
+    """Прокси, который создает HeavyResource только при первом обращении."""
+    def __init__(self, name):
+        self._name = name
+        self._resource = None
+
+    def operation(self):
+        if self._resource is None:
+            self._resource = HeavyResource(self._name)
+        return self._resource.operation()
+
+if __name__ == "__main__":
+    print("Создание прокси...")
+    proxy = ResourceProxy("BigData")
+    print("Прокси создан, ресурс еще не загружен.")
+
+    print("\nПервый вызов:")
+    print(proxy.operation()) # Здесь произойдет загрузка
+
+    print("\nВторой вызов:")
+    print(proxy.operation()) # Ресурс уже загружен, задержки нет
 ```
 
 ### 2. Protection Proxy (Контроль доступа)
 
-```python
-class SensitiveData:
-    def __init__(self):
-        self._data = "Top Secret Data"
-
-    def read(self):
-        return self._data
-
-class DataProxy:
-    def __init__(self, user):
-        self._user = user
-        self._real_data = SensitiveData()
-
-    def read(self):
-        if self._user == "admin":
-            return self._real_data.read()
-        else:
-            return "Access Denied"
-
-# Использование
-admin_proxy = DataProxy("admin")
-print(admin_proxy.read())  # "Top Secret Data"
-
-user_proxy = DataProxy("user")
-print(user_proxy.read())  # "Access Denied"
-```
-
-### 3. Remote Proxy (Удалённый доступ)
+Ограничивает доступ к объекту в зависимости от роли пользователя.
 
 ```python
-import json
 from abc import ABC, abstractmethod
 
-class DatabaseService(ABC):
+class Document(ABC):
     @abstractmethod
-    def get_data(self, query):
+    def read(self, user_role: str) -> str:
         pass
 
-class RealDatabaseService(DatabaseService):
-    def get_data(self, query):
-        # В реальности здесь было бы подключение к БД
-        return {"result": f"Data for query: {query}"}
+class SecretDocument(Document):
+    def read(self, user_role: str) -> str:
+        return "Секретная информация: Проект X"
 
-class DatabaseProxy(DatabaseService):
+class DocumentProxy(Document):
     def __init__(self):
-        self._real_service = None
+        self._document = SecretDocument()
+        self._allowed_roles = ["admin", "manager"]
+
+    def read(self, user_role: str) -> str:
+        if user_role in self._allowed_roles:
+            return self._document.read(user_role)
+        else:
+            return "Доступ запрещен: недостаточно прав"
+
+if __name__ == "__main__":
+    proxy = DocumentProxy()
+
+    print(proxy.read("user"))    # Доступ запрещен
+    print(proxy.read("admin"))   # Секретная информация: Проект X
+```
+
+### 3. Caching Proxy (Кеширование)
+
+Сохраняет результаты предыдущих запросов для ускорения повторных обращений.
+
+```python
+class DatabaseService:
+    """Имитация медленного сервиса базы данных."""
+    def get_data(self, query: str) -> dict:
+        print(f"Выполнение запроса к БД: {query}")
+        return {"data": f"Result for {query}"}
+
+class CachedDatabaseProxy:
+    def __init__(self):
+        self._service = DatabaseService()
         self._cache = {}
 
-    def get_data(self, query):
-        # Ленивая инициализация
-        if self._real_service is None:
-            print("Connecting to remote database...")
-            self._real_service = RealDatabaseService()
-
-        # Кеширование
+    def get_data(self, query: str) -> dict:
         if query in self._cache:
-            print("Returning cached result")
+            print("Возврат данных из кэша")
             return self._cache[query]
 
-        result = self._real_service.get_data(query)
+        result = self._service.get_data(query)
         self._cache[query] = result
         return result
 
-# Использование
-proxy = DatabaseProxy()
-print(proxy.get_data("SELECT * FROM users"))  # Соединение + запрос
-print(proxy.get_data("SELECT * FROM users"))  # Возврат из кеша
+if __name__ == "__main__":
+    proxy = CachedDatabaseProxy()
+
+    print(proxy.get_data("SELECT * FROM users")) # Запрос к БД
+    print(proxy.get_data("SELECT * FROM users")) # Из кэша
 ```
 
-### 4. Smart Proxy (Дополнительная логика)
+## Достоинства и недостатки
 
-```python
-class BankAccount:
-    def __init__(self, balance=0):
-        self._balance = balance
+**Достоинства:**
 
-    def deposit(self, amount):
-        self._balance += amount
+1. **Контроль доступа**: Позволяет управлять доступом к объекту без изменения его кода (например, проверка прав).
+2. **Оптимизация производительности**: Ленивая инициализация экономит ресурсы, а кеширование ускоряет повторные запросы.
+3. **Прозрачность для клиента**: Клиент работает с тем же интерфейсом, что и с реальным объектом.
+4. **Безопасность**: Можно скрыть реальный объект от прямого доступа, особенно в случае Remote Proxy.
 
-    def withdraw(self, amount):
-        if amount > self._balance:
-            raise ValueError("Insufficient funds")
-        self._balance -= amount
+**Недостатки:**
 
-    def get_balance(self):
-        return self._balance
-
-class BankAccountProxy:
-    def __init__(self, real_account, owner):
-        self._real_account = real_account
-        self._owner = owner
-        self._access_count = 0
-
-    def deposit(self, amount):
-        self._access_count += 1
-        print(f"Log: {self._owner} deposited {amount}")
-        self._real_account.deposit(amount)
-
-    def withdraw(self, amount):
-        self._access_count += 1
-        print(f"Log: {self._owner} tried to withdraw {amount}")
-        self._real_account.withdraw(amount)
-
-    def get_balance(self):
-        self._access_count += 1
-        print(f"Log: {self._owner} checked balance")
-        return self._real_account.get_balance()
-
-    def get_access_count(self):
-        return self._access_count
-
-# Использование
-account = BankAccount(100)
-proxy = BankAccountProxy(account, "John Doe")
-
-proxy.deposit(50)
-proxy.withdraw(30)
-print(f"Balance: {proxy.get_balance()}")
-print(f"Access count: {proxy.get_access_count()}")
-```
-
-## Преимущества Proxy:
-
-- Контроль доступа к реальному объекту
-- Дополнительные возможности без изменения реального объекта
-- Ленивая инициализация ресурсоёмких объектов
-- Кеширование результатов
-- Упрощение работы с удалёнными объектами
-
-## Недостатки:
-
-- Увеличение времени отклика из-за дополнительной логики
-- Усложнение кода (введение дополнительных классов)
-
-Паттерн Proxy особенно полезен, когда нужно добавить дополнительное поведение к объекту без изменения его кода или когда создание реального объекта является ресурсоёмкой операцией.
+1. **Усложнение кода**: Появляются дополнительные классы, что увеличивает общую сложность системы.
+2. **Накладные расходы**: Каждый запрос проходит через прокси, что может немного увеличить время отклика (особенно если прокси выполняет сложные проверки).
+3. **Проблемы с жизненным циклом**: В некоторых случаях (например, Remote Proxy) управление временем жизни объектов может стать сложнее.

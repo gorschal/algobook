@@ -1,226 +1,177 @@
 ---
+title: Преобразования данных в машинном обучении
+description: Совокупность методов подготовки сырых данных к анализу и обучению моделей машинного обучения.
+date: 2026-07-25
 tags:
-  [
-    Обработка текста,
-    Компьютерное зрение,
-    Экономика и финансы,
-    Биотехнологии и медицина,
-    Предиктивная аналитика,
-  ]
+  - "Машинное обучение и рекомендательные системы"
+  - "Аналитика данных и базы данных"
 ---
 
 # Преобразования данных в машинном обучении
 
-Преобразования данных - это критически важный этап подготовки данных перед построением моделей машинного обучения. Они помогают улучшить качество данных, привести их к виду, который лучше подходит для алгоритмов, и часто значительно повышают производительность моделей.
+**Data Preprocessing and Feature Engineering** — совокупность методов подготовки сырых данных к анализу и обучению моделей машинного обучения. Включает в себя очистку, нормализацию, кодирование и генерацию новых признаков для повышения качества прогнозов.
 
-## Основные бласти применения
+## Подробное описание
 
-1. Обработка текста — векторизация текста, лемматизация, токенизация  
-2. Компьютерное зрение — нормализация изображений, аугментация данных, преобразование цветовых пространств  
-3. Экономика и финансы — масштабирование признаков, обработка выбросов, создание производных показателей  
-4. Биотехнологии и медицина — стандартизация данных, кодирование категориальных признаков, заполнение пропусков  
-5. Предиктивная аналитика — полиномиальные преобразования, создание временных лагов, бинирование непрерывных переменных 
+В реальных задачах данные редко бывают готовы к немедленному использованию. Они могут содержать пропуски, выбросы, иметь разный масштаб или быть представлены в категориальном виде. Алгоритмы машинного обучения, особенно основанные на расстояниях (k-NN, SVM) или градиентных спусках (нейронные сети, линейная регрессия), чувствительны к распределению и масштабу входных переменных.
 
-## Основные типы преобразований данных
+**Ключевая идея:** Привести данные к единому стандарту, устраняя шум и несоответствия, чтобы модель могла выявлять истинные закономерности, а не артефакты сбора данных.
 
-### 1. Масштабирование и нормализация
+**Входные данные:** Сырой датасет (таблица, текст, изображения).
+**Выходные данные:** Очищенный и трансформированный набор признаков, пригодный для подачи на вход алгоритма ML.
+
+## Основные принципы
+
+### 1. Масштабирование признаков
+
+Многие алгоритмы интерпретируют большие значения признаков как более важные. Чтобы избежать этого, применяют масштабирование.
 
 #### Стандартизация (Z-score normalization)
-```python
-from sklearn.preprocessing import StandardScaler
-import numpy as np
+Приводит данные к распределению с нулевым средним и единичной дисперсией.
 
-data = np.array([[1, 2], [3, 4], [5, 6]])
-scaler = StandardScaler()
-scaled_data = scaler.fit_transform(data)
+$$
+z = \frac{x - \mu}{\sigma}
+$$
 
-print("Исходные данные:\n", data)
-print("Стандартизированные данные:\n", scaled_data)
-print("Средние значения:", scaler.mean_)
-print("Стандартные отклонения:", scaler.scale_)
-```
+Где:
+- $x$ — исходное значение признака
+- $\mu$ — среднее значение признака
+- $\sigma$ — стандартное отклонение
 
 #### Min-Max нормализация
-```python
-from sklearn.preprocessing import MinMaxScaler
+Сжимает значения в заданный диапазон, обычно $[0, 1]$.
 
-data = np.array([[1, 2], [3, 4], [5, 6]])
-scaler = MinMaxScaler(feature_range=(0, 1))
-scaled_data = scaler.fit_transform(data)
+$$
+x' = \frac{x - x_{min}}{x_{max} - x_{min}}
+$$
 
-print("Исходные данные:\n", data)
-print("Нормализованные данные:\n", scaled_data)
-print("Минимальные значения:", scaler.data_min_)
-print("Максимальные значения:", scaler.data_max_)
-```
+Где:
+- $x_{min}$ и $x_{max}$ — минимальное и максимальное значения в выборке
 
-### 2. Кодирование категориальных признаков
+### 2. Кодирование категориальных переменных
 
-#### One-Hot Encoding
-```python
-from sklearn.preprocessing import OneHotEncoder
-import pandas as pd
+Алгоритмы работают с числами, поэтому текстовые категории необходимо преобразовать.
 
-data = pd.DataFrame({'color': ['red', 'blue', 'green', 'blue', 'red']})
-encoder = OneHotEncoder(sparse=False)
-encoded_data = encoder.fit_transform(data)
+**One-Hot Encoding:** Создает бинарный вектор для каждой категории. Если категорий $N$, то создается $N$ новых признаков.
+**Label Encoding:** Присваивает каждой категории уникальное целое число. Подходит только для порядковых данных или деревьев решений.
 
-print("Исходные данные:\n", data)
-print("Закодированные данные:\n", encoded_data)
-print("Категории:", encoder.categories_)
-```
+### 3. Обработка пропущенных значений (Imputation)
 
-#### Label Encoding
-```python
-from sklearn.preprocessing import LabelEncoder
+Стратегии заполнения пропусков:
+- Среднее/медиана (для числовых данных)
+- Мода (для категориальных)
+- Константа (специальное значение, например, -1 или "Unknown")
 
-data = ['cat', 'dog', 'bird', 'dog', 'cat']
-encoder = LabelEncoder()
-encoded_data = encoder.fit_transform(data)
+## Пример реализации на Python
 
-print("Исходные данные:", data)
-print("Закодированные данные:", encoded_data)
-print("Соответствие классов:", list(encoder.classes_))
-```
+Для демонстрации принципов используем только стандартную библиотеку и `numpy`, избегая тяжелых фреймворков вроде `sklearn`, чтобы показать внутреннюю логику алгоритмов.
 
-### 3. Преобразование текстовых данных
-
-#### TF-IDF
-```python
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-corpus = [
-    'this is the first document',
-    'this document is the second document',
-    'and this is the third one',
-    'is this the first document'
-]
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(corpus)
-
-print("Словарь:", vectorizer.get_feature_names_out())
-print("TF-IDF матрица:\n", X.toarray())
-```
-
-### 4. Обработка пропущенных значений
-
-```python
-from sklearn.impute import SimpleImputer
-import numpy as np
-
-data = np.array([[1, np.nan, 3], [4, 5, np.nan], [7, 8, 9]])
-imputer = SimpleImputer(strategy='mean')
-imputed_data = imputer.fit_transform(data)
-
-print("Исходные данные:\n", data)
-print("Данные после обработки пропусков:\n", imputed_data)
-print("Значения для замены:", imputer.statistics_)
-```
-
-### 5. Преобразование распределения (нормализация)
-
-#### Логарифмическое преобразование
 ```python
 import numpy as np
-from sklearn.preprocessing import FunctionTransformer
+from typing import List, Dict, Union
 
-data = np.array([1, 10, 100, 1000]).reshape(-1, 1)
-transformer = FunctionTransformer(np.log1p)
-transformed_data = transformer.transform(data)
+class DataPreprocessor:
+    """Класс для базовых преобразований данных."""
 
-print("Исходные данные:", data.flatten())
-print("После логарифмирования:", transformed_data.flatten())
+    @staticmethod
+    def standardize(data: np.ndarray) -> np.ndarray:
+        """
+        Стандартизация данных (Z-score).
+        :param data: двумерный массив numpy
+        :return: стандартизированный массив
+        """
+        mean = np.mean(data, axis=0)
+        std = np.std(data, axis=0)
+        # Избегаем деления на ноль
+        std[std == 0] = 1
+        return (data - mean) / std
+
+    @staticmethod
+    def min_max_normalize(data: np.ndarray, feature_range=(0, 1)) -> np.ndarray:
+        """
+        Min-Max нормализация.
+        :param data: двумерный массив numpy
+        :param feature_range: кортеж (min, max) целевого диапазона
+        :return: нормализованный массив
+        """
+        min_val = np.min(data, axis=0)
+        max_val = np.max(data, axis=0)
+        range_val = max_val - min_val
+        range_val[range_val == 0] = 1
+        
+        normalized = (data - min_val) / range_val
+        return normalized * (feature_range[1] - feature_range[0]) + feature_range[0]
+
+    @staticmethod
+    def one_hot_encode(categories: List[str]) -> Dict[str, List[int]]:
+        """
+        Простое One-Hot кодирование списка категорий.
+        :param categories: список строк
+        :return: словарь {категория: бинарный вектор}
+        """
+        unique_cats = sorted(list(set(categories)))
+        encoding = {}
+        for cat in unique_cats:
+            vector = [0] * len(unique_cats)
+            index = unique_cats.index(cat)
+            vector[index] = 1
+            encoding[cat] = vector
+        return encoding
+
+    @staticmethod
+    def impute_mean(data: np.ndarray) -> np.ndarray:
+        """
+        Заполнение пропусков (NaN) средним значением столбца.
+        :param data: массив с возможными NaN
+        :return: массив без NaN
+        """
+        processed_data = data.copy()
+        for col in range(processed_data.shape[1]):
+            column = processed_data[:, col]
+            mask = np.isnan(column)
+            if np.any(mask):
+                mean_val = np.nanmean(column)
+                column[mask] = mean_val
+        return processed_data
+
+if __name__ == "__main__":
+    # Пример 1: Масштабирование
+    raw_data = np.array([[10, 200], [20, 300], [30, 400]])
+    print("Исходные данные:\n", raw_data)
+    
+    standardized = DataPreprocessor.standardize(raw_data)
+    print("\nСтандартизированные данные:\n", standardized)
+    
+    normalized = DataPreprocessor.min_max_normalize(raw_data)
+    print("\nMin-Max нормализованные данные:\n", normalized)
+
+    # Пример 2: Кодирование
+    colors = ['red', 'blue', 'green', 'blue']
+    encoded = DataPreprocessor.one_hot_encode(colors)
+    print("\nOne-Hot Encoding для 'blue':", encoded['blue'])
+
+    # Пример 3: Обработка пропусков
+    data_with_nan = np.array([[1.0, 2.0], [np.nan, 4.0], [3.0, np.nan]])
+    imputed = DataPreprocessor.impute_mean(data_with_nan)
+    print("\nДанные после импутации средних:\n", imputed)
 ```
 
-#### Преобразование Бокса-Кокса
-```python
-from sklearn.preprocessing import PowerTransformer
+## Достоинства и недостатки
 
-data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).reshape(-1, 1)
-transformer = PowerTransformer(method='box-cox', standardize=False)
-transformed_data = transformer.fit_transform(data)
+**Достоинства:**
+1. **Повышение точности моделей:** Устранение шума и приведение к единому масштабу позволяет алгоритмам находить более четкие границы решений.
+2. **Ускорение сходимости:** Градиентные методы оптимизации работают значительно быстрее на нормализованных данных.
+3. **Универсальность:** Большинство современных ML-библиотек требуют предварительно обработанные данные.
 
-print("Исходные данные:", data.flatten())
-print("После преобразования Бокса-Кокса:", transformed_data.flatten())
-print("Лямбда параметр:", transformer.lambdas_)
-```
+**Недостатки:**
+1. **Риск утечки данных (Data Leakage):** Если параметры преобразования (например, среднее значение) вычисляются на всем датасете включая тестовую выборку, оценка модели будет необъективно завышена.
+2. **Потеря интерпретируемости:** После сложных преобразований (например, PCA или полиномиальных) исходный смысл признаков может быть утрачен.
+3. **Вычислительная сложность:** Некоторые методы (например, заполнение пропусков сложными моделями) могут требовать значительных ресурсов.
 
-### 6. Создание полиномиальных признаков
-```python
-from sklearn.preprocessing import PolynomialFeatures
+## Области применения
 
-data = np.array([[1, 2], [3, 4]])
-poly = PolynomialFeatures(degree=2)
-poly_data = poly.fit_transform(data)
-
-print("Исходные данные:\n", data)
-print("Полиномиальные признаки:\n", poly_data)
-print("Имена признаков:", poly.get_feature_names_out())
-```
-
-### 7. Дискретизация (биннинг)
-```python
-from sklearn.preprocessing import KBinsDiscretizer
-
-data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).reshape(-1, 1)
-est = KBinsDiscretizer(n_bins=3, encode='ordinal', strategy='uniform')
-est.fit(data)
-discretized = est.transform(data)
-
-print("Исходные данные:", data.flatten())
-print("После дискретизации:", discretized.flatten())
-print("Границы бинов:", est.bin_edges_)
-```
-
-## Пайплайн преобразований
-
-На практике часто используют несколько преобразований последовательно:
-
-```python
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.impute import SimpleImputer
-
-# Пример данных
-data = pd.DataFrame({
-    'age': [25, 30, np.nan, 35, 40],
-    'salary': [50000, 60000, 70000, np.nan, 90000],
-    'department': ['IT', 'HR', 'IT', 'Finance', 'HR']
-})
-
-# Определяем преобразования для разных типов признаков
-numeric_features = ['age', 'salary']
-numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='median')),
-    ('scaler', StandardScaler())])
-
-categorical_features = ['department']
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))])
-
-# Объединяем преобразования
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', numeric_transformer, numeric_features),
-        ('cat', categorical_transformer, categorical_features)])
-
-# Применяем преобразования
-processed_data = preprocessor.fit_transform(data)
-print("Преобразованные данные:\n", processed_data)
-```
-
-## Важность преобразований данных
-
-1. **Улучшение производительности моделей**: Многие алгоритмы (например, SVM, k-NN, нейронные сети) чувствительны к масштабу данных.
-
-2. **Ускорение обучения**: Нормализованные данные часто позволяют алгоритмам сходиться быстрее.
-
-3. **Интерпретируемость**: Преобразования могут сделать данные более понятными для анализа.
-
-4. **Обработка выбросов**: Некоторые преобразования (например, логарифмирование) уменьшают влияние выбросов.
-
-5. **Подготовка к специфичным алгоритмам**: Например, PCA требует масштабированных данных.
-
-Выбор конкретных преобразований зависит от природы данных, выбранной модели и поставленной задачи. Часто пробуют несколько вариантов и выбирают тот, который дает лучший результат.
+1. Машинное обучение и рекомендательные системы (подготовка признаков для коллаборативной фильтрации и градиентного бустинга)
+2. Обработка естественного языка (токенизация и векторизация текста перед подачей в трансформеры)
+3. Экономика и финансы (нормализация финансовых показателей для скоринга и прогнозирования временных рядов)
+4. Биотехнологии и медицина (стандартизация результатов лабораторных анализов для диагностических моделей)
+5. Компьютерное зрение (нормализация пиксельных значений изображений для обучения сверточных нейросетей)

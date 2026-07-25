@@ -1,69 +1,124 @@
 ---
-tags: [Патерны проектирования]
+title: Паттерн Decorator (Декоратор)
+description: Структурный паттерн проектирования для динамического добавления функциональности объектам через обёртки.
+date: 2026-07-25
+tags:
+  - "Паттерны проектирования"
 ---
 
 # Паттерн Decorator (Декоратор)
 
-Паттерн Decorator (Декоратор) — это структурный паттерн проектирования, который позволяет динамически добавлять объектам новую функциональность, оборачивая их в полезные "обёртки". Это гибкая альтернатива наследованию для расширения функциональности.
+Паттерн Decorator (Декоратор) — это структурный паттерн проектирования, который позволяет динамически добавлять объектам новую функциональность, оборачивая их в специальные классы-обёртки.
 
-## Основные концепции Decorator
+## Подробное описание
 
-- **Динамическое добавление ответственности**: Позволяет добавлять новое поведение объектам без изменения их класса
-- **Альтернатива наследованию**: В отличие от наследования, декораторы обеспечивают более гибкое расширение функциональности
-- **Композиция вместо наследования**: Использует композицию для объединения поведения во время выполнения
+Паттерн решает задачу расширения поведения объектов без использования наследования. В отличие от подклассов, которые фиксируют поведение на этапе компиляции, декораторы позволяют комбинировать различные обязанности во время выполнения программы.
 
-## Структура паттерна
+**Постановка задачи:**
+Необходимо добавить новые возможности существующим объектам, не изменяя их исходный код и не создавая экспоненциально растущее количество подклассов для каждой возможной комбинации свойств.
 
-- **Компонент (Component)**: Интерфейс для объектов, которые могут иметь добавленные обязанности
-- **Конкретный компонент (ConcreteComponent)**: Конкретный объект, который может быть обёрнут декораторами
-- **Декоратор (Decorator)**: Хранит ссылку на компонент и реализует его интерфейс
-- **Конкретные декораторы (ConcreteDecorators)**: Добавляют конкретную функциональность
+**Входные данные:**
 
-## Преимущества
+- Базовый объект, реализующий общий интерфейс.
+- Набор дополнительных поведений (декораторов).
 
-- Большая гибкость, чем у наследования
-- Позволяет избежать перегруженных функциями классов на верхних уровнях иерархии
-- Можно добавлять и удалять обязанности во время выполнения
-- Можно комбинировать несколько декораторов
+**Выходные данные:**
 
-## Недостатки
+- Объект, обладающий суммой функциональностей базового компонента и всех применённых декораторов.
 
-- Может привести к большому количеству маленьких классов
-- Трудно реализовать декоратор, который не зависит от порядка других декораторов
-- Исходный код может быть сложнее для понимания из-за множества обёрток
+**Ключевая идея:**
+Создать иерархию классов-декораторов, которые реализуют тот же интерфейс, что и базовый объект. Каждый декоратор хранит ссылку на оборачиваемый объект и делегирует ему основные операции, добавляя своё поведение до или после делегирования.
 
-## Примеры реализации на Python
+## Основные принципы
 
-### 1. Базовый пример с текстом
+### Структура паттерна
+
+Для понимания взаимодействия элементов используется следующая схема:
+
+```mermaid
+classDiagram
+    class Component {
+        <<interface>>
+        +operation()
+    }
+    class ConcreteComponent {
+        +operation()
+    }
+    class Decorator {
+        <<abstract>>
+        -component : Component
+        +operation()
+    }
+    class ConcreteDecoratorA {
+        +operation()
+    }
+    class ConcreteDecoratorB {
+        +operation()
+    }
+
+    Component <|.. ConcreteComponent
+    Component <|.. Decorator
+    Decorator o-- Component : wraps
+    Decorator <|-- ConcreteDecoratorA
+    Decorator <|-- ConcreteDecoratorB
+```
+
+Где:
+
+- **Component (Компонент)**: Определяет общий интерфейс для объектов, к которым можно динамически добавлять обязанности.
+- **ConcreteComponent (Конкретный компонент)**: Класс, объекты которого мы хотим дополнительно оснащать ответственностью.
+- **Decorator (Декоратор)**: Хранит ссылку на объект компонента и реализует интерфейс компонента.
+- **ConcreteDecorator (Конкретный декоратор)**: Добавляет компоненту дополнительную функциональность.
+
+### Математическая логика композиции
+
+Если рассматривать стоимость или сложность операции как функцию $C$, то применение декораторов можно описать рекурсивно:
+
+$$
+C_{total}(obj) = C_{decorator_n}(... C_{decorator_1}(C_{base}(obj))...)
+$$
+
+Где:
+
+- $C_{base}$ — стоимость операции базового объекта.
+- $C_{decorator_i}$ — дополнительная стоимость, вносимая $i$-м декоратором.
+
+## Пример реализации на Python
+
+Ниже представлен классический пример оформления текста HTML-тегами. Мы создаем базовый текст и динамически добавляем ему жирность, курсив и подчеркивание.
 
 ```python
 from abc import ABC, abstractmethod
 
-# Интерфейс компонента
+# 1. Интерфейс компонента
 class TextComponent(ABC):
     @abstractmethod
     def render(self) -> str:
+        """Возвращает отображаемый текст."""
         pass
 
-# Конкретный компонент
+# 2. Конкретный компонент
 class PlainText(TextComponent):
-    def __init__(self, text):
+    def __init__(self, text: str):
         self._text = text
 
     def render(self) -> str:
         return self._text
 
-# Базовый декоратор
+# 3. Базовый декоратор
+# Наследуется от TextComponent, чтобы сохранить тип интерфейса
 class TextDecorator(TextComponent):
     def __init__(self, component: TextComponent):
         self._component = component
 
     def render(self) -> str:
+        # Делегируем основную работу обернутому объекту
         return self._component.render()
 
-# Конкретные декораторы
+# 4. Конкретные декораторы
 class BoldDecorator(TextDecorator):
     def render(self) -> str:
+        # Добавляем поведение до/после делегирования
         return f"<b>{self._component.render()}</b>"
 
 class ItalicDecorator(TextDecorator):
@@ -74,122 +129,38 @@ class UnderlineDecorator(TextDecorator):
     def render(self) -> str:
         return f"<u>{self._component.render()}</u>"
 
-# Использование
-text = PlainText("Hello, World!")
-decorated_text = BoldDecorator(ItalicDecorator(UnderlineDecorator(text)))
 
-print(decorated_text.render())  # <b><i><u>Hello, World!</u></i></b>
+if __name__ == "__main__":
+    # Создаем базовый объект
+    simple_text = PlainText("Hello, Algobook!")
+
+    # Оборачиваем его в декораторы
+    # Порядок важен: последний вызванный декоратор будет внешним
+    decorated_text = BoldDecorator(
+                        ItalicDecorator(
+                            UnderlineDecorator(simple_text)
+                        )
+                     )
+
+    print(f"Результат: {decorated_text.render()}")
+    # Вывод: <b><i><u>Hello, Algobook!</u></i></b>
+
+    # Можно легко менять комбинации
+    another_text = BoldDecorator(PlainText("Just Bold"))
+    print(f"Результат 2: {another_text.render()}")
+    # Вывод: <b>Just Bold</b>
 ```
 
-### 2. Пример с кофе и добавками
+## Достоинства и недостатки
 
-```python
-from abc import ABC, abstractmethod
+**Достоинства:**
 
-# Абстрактный компонент - напиток
-class Beverage(ABC):
-    @abstractmethod
-    def get_description(self) -> str:
-        pass
+1. **Гибкость расширения**: Позволяет добавлять новое поведение объектам динамически, во время выполнения, а не на этапе компиляции.
+2. **Принцип единственной ответственности**: Каждый декоратор отвечает только за одну конкретную дополнительную функцию, что упрощает поддержку кода.
+3. **Комбинируемость**: Можно создавать сложные конфигурации поведения, вкладывая декораторы друг в друга, без создания новых классов для каждой комбинации.
 
-    @abstractmethod
-    def cost(self) -> float:
-        pass
+**Недостатки:**
 
-# Конкретные компоненты - виды кофе
-class Espresso(Beverage):
-    def get_description(self) -> str:
-        return "Espresso"
-
-    def cost(self) -> float:
-        return 1.99
-
-class DarkRoast(Beverage):
-    def get_description(self) -> str:
-        return "Dark Roast Coffee"
-
-    def cost(self) -> float:
-        return 0.99
-
-# Абстрактный декоратор - добавка
-class CondimentDecorator(Beverage, ABC):
-    def __init__(self, beverage: Beverage):
-        self._beverage = beverage
-
-    @abstractmethod
-    def get_description(self) -> str:
-        pass
-
-# Конкретные декораторы - виды добавок
-class Milk(CondimentDecorator):
-    def get_description(self) -> str:
-        return self._beverage.get_description() + ", Milk"
-
-    def cost(self) -> float:
-        return self._beverage.cost() + 0.20
-
-class Mocha(CondimentDecorator):
-    def get_description(self) -> str:
-        return self._beverage.get_description() + ", Mocha"
-
-    def cost(self) -> float:
-        return self._beverage.cost() + 0.30
-
-class Whip(CondimentDecorator):
-    def get_description(self) -> str:
-        return self._beverage.get_description() + ", Whip"
-
-    def cost(self) -> float:
-        return self._beverage.cost() + 0.15
-
-# Использование
-beverage = Espresso()
-print(f"{beverage.get_description()} ${beverage.cost()}")
-
-beverage2 = DarkRoast()
-beverage2 = Mocha(beverage2)
-beverage2 = Mocha(beverage2)
-beverage2 = Whip(beverage2)
-print(f"{beverage2.get_description()} ${beverage2.cost()}")
-```
-
-### 3. Пример с декораторами функций (встроенная поддержка в Python)
-
-Python имеет встроенную поддержку декораторов для функций:
-
-```python
-def make_bold(func):
-    def wrapper(*args, **kwargs):
-        return f"<b>{func(*args, **kwargs)}</b>"
-    return wrapper
-
-def make_italic(func):
-    def wrapper(*args, **kwargs):
-        return f"<i>{func(*args, **kwargs)}</i>"
-    return wrapper
-
-def make_underline(func):
-    def wrapper(*args, **kwargs):
-        return f"<u>{func(*args, **kwargs)}</u>"
-    return wrapper
-
-# Применение нескольких декораторов
-@make_bold
-@make_italic
-@make_underline
-def hello(name):
-    return f"Hello, {name}!"
-
-print(hello("World"))  # <b><i><u>Hello, World!</u></i></b>
-
-# Эквивалентно:
-# hello = make_bold(make_italic(make_underline(hello)))
-```
-
-## Когда использовать Decorator?
-
-- Когда нужно добавлять обязанности объектам динамически и прозрачно
-- Когда нельзя расширить функциональность с помощью наследования
-- Когда нужно добавлять и удалять обязанности во время выполнения
-
-Decorator особенно полезен в системах, где важно соблюдение принципа открытости/закрытости (классы должны быть открыты для расширения, но закрыты для модификации).
+1. **Сложность удаления обёртки**: Если нужно удалить конкретный слой функциональности из стека декораторов, это может быть нетривиальной задачей.
+2. **Усложнение идентификации типа**: Объект, обернутый в несколько декораторов, сложнее идентифицировать через `isinstance` или при сравнении типов, так как фактический класс меняется.
+3. **Множество мелких классов**: Паттерн приводит к увеличению количества классов в системе, что может затруднить навигацию по кодовой базе для новичков.

@@ -1,175 +1,181 @@
 ---
-tags: [Патерны проектирования]
+title: Паттерн Builder (Строитель)
+description: Порождающий паттерн проектирования для пошагового создания сложных объектов.
+date: 2026-07-25
+tags:
+  - "Паттерны проектирования"
 ---
 
 # Паттерн Builder (Строитель)
 
-Паттерн Builder (Строитель) - это порождающий паттерн проектирования, который позволяет создавать сложные объекты пошагово. Он отделяет конструирование сложного объекта от его представления, так что в результате одного и того же процесса конструирования могут получаться разные представления.
+Паттерн Builder (Строитель) — это порождающий паттерн проектирования, который позволяет создавать сложные объекты пошагово. Он отделяет конструирование сложного объекта от его представления, так что в результате одного и того же процесса конструирования могут получаться разные представления.
 
-## Когда использовать Builder?
+## Подробное описание
 
-- Когда объект имеет много параметров (некоторые из которых необязательные)
-- Когда нужно создавать разные варианты одного объекта
-- Когда процесс создания объекта должен быть независимым от его частей
-- Когда нужно обеспечить контроль над процессом создания сложного объекта
+Паттерн Builder решает проблему «телескопического конструктора» (telescoping constructor anti-pattern), когда класс имеет множество параметров, часть из которых необязательна. Вместо передачи всех аргументов в один конструктор или использования множества перегруженных конструкторов, Builder предоставляет интерфейс для поэтапной настройки объекта.
 
-## Основные компоненты Builder
+**Ключевая идея:** разбить процесс создания объекта на последовательность шагов. Клиентский код вызывает методы строителя в нужном порядке, а затем запрашивает готовый объект. Это позволяет использовать один и тот же процесс строительства для создания разных представлений продукта.
 
-1. **Product** - создаваемый сложный объект
-2. **Builder** - абстрактный интерфейс для создания частей Product
-3. **ConcreteBuilder** - конкретная реализация Builder, создает и собирает части Product
-4. **Director** - отвечает за выполнение шагов построения (может отсутствовать в упрощенных реализациях)
+## Принцип работы
 
-## Пример 1: Классическая реализация Builder
+### Структура паттерна
 
-```python
-# Product - сложный объект, который мы строим
-class Pizza:
-    def __init__(self):
-        self.dough = None
-        self.sauce = None
-        self.topping = None
+Паттерн состоит из следующих участников:
 
-    def __str__(self):
-        return f"Пицца с тестом: {self.dough}, соусом: {self.sauce} и начинкой: {self.topping}"
+1. **Product** — создаваемый сложный объект.
+2. **Builder** — абстрактный интерфейс, объявляющий шаги построения Product.
+3. **ConcreteBuilder** — конкретная реализация, которая собирает части продукта и предоставляет метод для получения результата.
+4. **Director** (опционально) — управляет порядком выполнения шагов построения. В современных реализациях на Python часто опускается в пользу Fluent Interface.
 
-# Abstract Builder
-class PizzaBuilder:
-    def __init__(self):
-        self.pizza = Pizza()
+```mermaid
+classDiagram
+    class Director {
+        +construct(builder)
+    }
+    class Builder {
+        <<interface>>
+        +buildPartA()
+        +buildPartB()
+        +getResult()
+    }
+    class ConcreteBuilder {
+        +buildPartA()
+        +buildPartB()
+        +getResult()
+    }
+    class Product {
+        +partA
+        +partB
+    }
 
-    def set_dough(self, dough):
-        self.pizza.dough = dough
-
-    def set_sauce(self, sauce):
-        self.pizza.sauce = sauce
-
-    def set_topping(self, topping):
-        self.pizza.topping = topping
-
-    def get_pizza(self):
-        return self.pizza
-
-# Concrete Builder
-class MargheritaBuilder(PizzaBuilder):
-    def build_dough(self):
-        self.set_dough("тонкое")
-
-    def build_sauce(self):
-        self.set_sauce("томатный")
-
-    def build_topping(self):
-        self.set_topping("моцарелла и базилик")
-
-# Director
-class Waiter:
-    def __init__(self):
-        self.builder = None
-
-    def construct_pizza(self, builder):
-        self.builder = builder
-        self.builder.build_dough()
-        self.builder.build_sauce()
-        self.builder.build_topping()
-
-    def get_pizza(self):
-        return self.builder.get_pizza()
-
-# Использование
-waiter = Waiter()
-margherita_builder = MargheritaBuilder()
-waiter.construct_pizza(margherita_builder)
-pizza = waiter.get_pizza()
-print(pizza)  # Пицца с тестом: тонкое, соусом: томатный и начинкой: моцарелла и базилик
+    Director --> Builder : uses
+    ConcreteBuilder ..|> Builder : implements
+    ConcreteBuilder --> Product : creates
 ```
 
-## Пример 2: Упрощенный Builder (без Director)
+### Математическая/Логическая формулировка
+
+Процесс построения можно описать как последовательность функций $f_i$, применяемых к промежуточному состоянию объекта $S$:
+
+$$
+S_{final} = f_n(f_{n-1}(...f_1(S_{initial})...))
+$$
+
+Где:
+
+- $S_{initial}$ — начальное состояние (пустой объект или прототип).
+- $f_i$ — метод строителя, устанавливающий конкретный параметр или часть объекта.
+- $S_{final}$ — полностью сконфигурированный объект.
+
+## Пример реализации на Python
+
+Ниже представлен пример реализации паттерна Builder для создания конфигурации сервера. Используется подход Fluent Interface (возврат `self`), позволяющий выстраивать цепочки вызовов, что является идиоматичным для Python.
 
 ```python
-class Computer:
+import json
+from typing import Optional
+
+class ServerConfig:
+    """Product: Сложный объект конфигурации сервера."""
     def __init__(self):
-        self.cpu = None
-        self.ram = None
-        self.storage = None
+        self.host: str = "localhost"
+        self.port: int = 8080
+        self.ssl_enabled: bool = False
+        self.max_connections: int = 100
+        self.database_url: Optional[str] = None
+        self.cache_ttl: int = 300
 
     def __str__(self):
-        return f"Computer: CPU={self.cpu}, RAM={self.ram}, Storage={self.storage}"
+        config_dict = {
+            "host": self.host,
+            "port": self.port,
+            "ssl_enabled": self.ssl_enabled,
+            "max_connections": self.max_connections,
+            "database_url": self.database_url,
+            "cache_ttl": self.cache_ttl
+        }
+        return json.dumps(config_dict, indent=4)
 
-class ComputerBuilder:
+class ServerConfigBuilder:
+    """ConcreteBuilder: Пошаговое создание конфигурации."""
+
     def __init__(self):
-        self.computer = Computer()
+        # Инициализируем новый продукт для каждого билдера
+        self._config = ServerConfig()
 
-    def add_cpu(self, cpu):
-        self.computer.cpu = cpu
-        return self  # Возвращаем self для поддержки цепочки вызовов
-
-    def add_ram(self, ram):
-        self.computer.ram = ram
+    def set_host(self, host: str) -> 'ServerConfigBuilder':
+        """Устанавливает хост."""
+        self._config.host = host
         return self
 
-    def add_storage(self, storage):
-        self.computer.storage = storage
+    def set_port(self, port: int) -> 'ServerConfigBuilder':
+        """Устанавливает порт."""
+        if not (1 <= port <= 65535):
+            raise ValueError("Port must be between 1 and 65535")
+        self._config.port = port
         return self
 
-    def build(self):
-        return self.computer
+    def enable_ssl(self) -> 'ServerConfigBuilder':
+        """Включает SSL шифрование."""
+        self._config.ssl_enabled = True
+        return self
 
-# Использование
-builder = ComputerBuilder()
-computer = builder.add_cpu("Intel i7").add_ram("16GB").add_storage("512GB SSD").build()
-print(computer)  # Computer: CPU=Intel i7, RAM=16GB, Storage=512GB SSD
+    def set_max_connections(self, count: int) -> 'ServerConfigBuilder':
+        """Устанавливает максимальное количество соединений."""
+        if count < 1:
+            raise ValueError("Max connections must be positive")
+        self._config.max_connections = count
+        return self
+
+    def set_database(self, url: str) -> 'ServerConfigBuilder':
+        """Подключает базу данных."""
+        self._config.database_url = url
+        return self
+
+    def set_cache_ttl(self, seconds: int) -> 'ServerConfigBuilder':
+        """Настраивает время жизни кэша."""
+        self._config.cache_ttl = seconds
+        return self
+
+    def build(self) -> ServerConfig:
+        """Возвращает финальный объект конфигурации."""
+        # Здесь можно добавить валидацию всего объекта перед отдачей
+        if self._config.ssl_enabled and self._config.port == 80:
+            # Пример логики валидации: обычно SSL не используют на 80 порту
+            pass
+        return self._config
+
+if __name__ == "__main__":
+    # Пример 1: Базовая конфигурация
+    basic_config = ServerConfigBuilder().build()
+    print("Базовая конфигурация:")
+    print(basic_config)
+    print("-" * 20)
+
+    # Пример 2: Продвинутая конфигурация с цепочкой вызовов
+    prod_config = (ServerConfigBuilder()
+                   .set_host("0.0.0.0")
+                   .set_port(443)
+                   .enable_ssl()
+                   .set_max_connections(1000)
+                   .set_database("postgres://user:pass@db/prod")
+                   .set_cache_ttl(600)
+                   .build())
+
+    print("Продакшн конфигурация:")
+    print(prod_config)
 ```
 
-## Пример 3: Builder с обязательными и необязательными параметрами
+## Достоинства и недостатки
 
-```python
-class User:
-    def __init__(self, username, email):
-        self.username = username
-        self.email = email
-        self.phone = None
-        self.address = None
+**Достоинства:**
 
-    def __str__(self):
-        return f"User: {self.username}, email: {self.email}, phone: {self.phone}, address: {self.address}"
+1. **Пошаговое создание.** Позволяет конструировать объект поэтапно, откладывая некоторые шаги или выполняя их рекурсивно.
+2. **Инкапсуляция сложности.** Клиентский код изолирован от деталей создания сложного объекта.
+3. **Принцип единственной ответственности.** Логика создания отделена от логики использования объекта.
+4. **Читаемость кода.** Использование Fluent Interface делает код создания объектов понятным и похожим на естественный язык.
 
-class UserBuilder:
-    def __init__(self, username, email):
-        self.user = User(username, email)
+**Недостатки:**
 
-    def set_phone(self, phone):
-        self.user.phone = phone
-        return self
-
-    def set_address(self, address):
-        self.user.address = address
-        return self
-
-    def build(self):
-        return self.user
-
-# Использование
-user1 = UserBuilder("john_doe", "john@example.com").build()
-print(user1)  # User: john_doe, email: john@example.com, phone: None, address: None
-
-user2 = UserBuilder("jane_doe", "jane@example.com").set_phone("123456789").build()
-print(user2)  # User: jane_doe, email: jane@example.com, phone: 123456789, address: None
-
-user3 = UserBuilder("bob_smith", "bob@example.com").set_phone("987654321").set_address("123 Main St").build()
-print(user3)  # User: bob_smith, email: bob@example.com, phone: 987654321, address: 123 Main St
-```
-
-## Преимущества Builder
-
-- Позволяет изменять внутреннее представление продукта
-- Изолирует код для создания и представления
-- Дает более тонкий контроль над процессом конструирования
-- Позволяет создавать объекты пошагово
-- Упрощает создание объектов с большим количеством параметров
-
-## Недостатки Builder
-
-- Усложняет код из-за введения дополнительных классов
-- Может быть избыточным для простых объектов
-
-Builder особенно полезен, когда объект требует многошагового процесса создания или когда нужно создавать разные варианты одного объекта.
+1. **Усложнение структуры.** Требует создания дополнительных классов (Builder), что может быть избыточно для простых объектов.
+2. **Зависимость от конкретного билдера.** Для создания разных вариантов объекта часто требуются разные конкретные билдеры.
