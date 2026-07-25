@@ -152,7 +152,11 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 extra_javascript:
   - assets/katex.js
@@ -164,6 +168,7 @@ extra_css:
 
 plugins:
   - meta
-  - tags
+  - tags:
+      tags_file: tags.md
   - search:
       lang: ru
