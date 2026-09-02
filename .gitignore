@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-AGENTS.md
 
 # C extensions
 *.so
@@ -60,7 +59,6 @@ venv.bak/
 # mkdocs documentation
 /site
 
-
 # user
 .DS_Store
 .idea
@@ -68,3 +66,5 @@ venv.bak/
 .vscode/
 .vs/
 local.md
+
+draft/
