@@ -35,113 +35,140 @@ theme:
         name: Switch to system preference
 
 nav:
-  - IoT и сетевые технологии:
-      - md/batch_updates.md
-      - md/even_tree.md
-  - Аналитика данных и базы данных:
-      - md/fp_growth.md
-      - md/apriori_algorithm.md
-      - md/merkle_tree.md
-      - md/check_cycle.md
-      - md/data_transformations.md
-      - md/facade.md
-      - md/cqrs.md
-      - md/batch_updates.md
-      - md/merkle_patricia_trie.md
-  - Биотехнологии и медицинская информатика:
-      - md/linucb.md
-      - md/multidimensional_dp.md
-      - md/1ddp.md
-  - ГИС и картография:
-      - md/jump_point_search.md
-  - Графовые модели и социальные сети:
-      - md/check_cycle.md
-      - md/bidirectional_a_star.md
-      - md/even_tree.md
-  - Игровая разработка:
-      - md/jump_point_search.md
-      - md/sac_rnd.md
-      - md/deep_q_networks.md
-      - md/flyweight.md
-      - md/astar.md
-      - md/prototype.md
-      - md/bidirectional_a_star.md
-  - Логистика и управление цепочками:
-      - md/jump_point_search.md
-      - md/multidimensional_dp.md
-      - md/astar.md
-      - md/1ddp.md
-      - md/bidirectional_a_star.md
-  - Машинное обучение и рекомендательные системы:
-      - md/fp_growth.md
-      - md/automatic_differentiation.md
-      - md/apriori_algorithm.md
-      - md/linucb.md
-      - md/moe.md
-      - md/rnd.md
-      - md/sac_rnd.md
-      - md/deep_q_networks.md
-      - md/policy_gradient.md
-      - md/data_transformations.md
-      - md/thompson_sampling.md
-      - md/markov_chain.md
-      - md/batch_updates.md
-      - md/1ddp.md
-  - Научные вычисления и физическое моделирование:
-      - md/automatic_differentiation.md
-      - md/diophantine_equation.md
-  - Обработка естественного языка:
-      - md/moe.md
-      - md/flyweight.md
-      - md/markov_chain.md
-      - md/1ddp.md
-  - Оптимизация и планирование:
-      - md/automatic_differentiation.md
-      - md/diophantine_equation.md
-      - md/astar.md
-      - md/check_cycle.md
-      - md/thompson_sampling.md
-      - md/batch_updates.md
-      - md/merkle_patricia_trie.md
-      - md/even_tree.md
-  - Паттерны проектирования:
-      - md/abstract_factory.md
-      - md/decorator.md
-      - md/merkle_tree.md
-      - md/factory_method.md
-      - md/flyweight.md
-      - md/singleton.md
-      - md/prototype.md
-      - md/facade.md
-      - md/composite.md
-      - md/cqrs.md
-      - md/bridge.md
-      - md/proxy.md
-      - md/builder.md
-      - md/adapter.md
-  - Робототехника и автономные системы:
-      - md/jump_point_search.md
-      - md/rnd.md
-      - md/sac_rnd.md
-      - md/astar.md
-      - md/bidirectional_a_star.md
-  - Торговля и коммерция:
-      - md/fp_growth.md
-      - md/apriori_algorithm.md
-      - md/linucb.md
-      - md/uma.md
-      - md/amm.md
-      - md/deep_q_networks.md
-      - md/policy_gradient.md
-      - md/facade.md
-      - md/thompson_sampling.md
-  - Экономика и финансы:
-      - md/uma.md
-      - md/amm.md
-      - md/equated_monthly_installments.md
-      - md/multidimensional_dp.md
-      - md/markov_chain.md
-      - md/1ddp.md
+- IoT и сетевые технологии:
+  - md/batch_updates.md
+  - md/even_tree.md
+- Аналитика данных и базы данных:
+  - md/fp_growth.md
+  - md/apriori_algorithm.md
+  - md/merkle_tree.md
+  - md/gbm.md
+  - md/check_cycle.md
+  - md/data_transformations.md
+  - md/facade.md
+  - md/cqrs.md
+  - md/batch_updates.md
+  - md/merkle_patricia_trie.md
+- Биотехнологии и медицинская информатика:
+  - md/linucb.md
+  - md/logistic-regression.md
+  - md/multidimensional_dp.md
+  - md/lasso-regression.md
+  - md/elasticnet.md
+  - md/1ddp.md
+  - md/ridge-regression.md
+- ГИС и картография:
+  - md/jump_point_search.md
+- Графовые модели и социальные сети:
+  - md/check_cycle.md
+  - md/bidirectional_a_star.md
+  - md/even_tree.md
+- Игровая разработка:
+  - md/jump_point_search.md
+  - md/sac_rnd.md
+  - md/deep_q_networks.md
+  - md/flyweight.md
+  - md/astar.md
+  - md/prototype.md
+  - md/bidirectional_a_star.md
+- Логистика и управление цепочками:
+  - md/jump_point_search.md
+  - md/gbm.md
+  - md/multidimensional_dp.md
+  - md/astar.md
+  - md/lasso-regression.md
+  - md/elasticnet.md
+  - md/1ddp.md
+  - md/arima.md
+  - md/bidirectional_a_star.md
+  - md/ridge-regression.md
+- Машинное обучение и рекомендательные системы:
+  - md/fp_growth.md
+  - md/automatic_differentiation.md
+  - md/apriori_algorithm.md
+  - md/linucb.md
+  - md/moe.md
+  - md/rnd.md
+  - md/sac_rnd.md
+  - md/gbm.md
+  - md/deep_q_networks.md
+  - md/logistic-regression.md
+  - md/policy_gradient.md
+  - md/linear-regression.md
+  - md/lasso-regression.md
+  - md/data_transformations.md
+  - md/polynomial-regression.md
+  - md/elasticnet.md
+  - md/thompson_sampling.md
+  - md/markov_chain.md
+  - md/batch_updates.md
+  - md/1ddp.md
+  - md/ridge-regression.md
+- Научные вычисления и физическое моделирование:
+  - md/automatic_differentiation.md
+  - md/diophantine_equation.md
+- Обработка естественного языка:
+  - md/moe.md
+  - md/logistic-regression.md
+  - md/flyweight.md
+  - md/markov_chain.md
+  - md/1ddp.md
+- Оптимизация и планирование:
+  - md/automatic_differentiation.md
+  - md/diophantine_equation.md
+  - md/astar.md
+  - md/check_cycle.md
+  - md/thompson_sampling.md
+  - md/batch_updates.md
+  - md/merkle_patricia_trie.md
+  - md/even_tree.md
+- Паттерны проектирования:
+  - md/abstract_factory.md
+  - md/decorator.md
+  - md/merkle_tree.md
+  - md/factory_method.md
+  - md/flyweight.md
+  - md/singleton.md
+  - md/prototype.md
+  - md/facade.md
+  - md/composite.md
+  - md/cqrs.md
+  - md/bridge.md
+  - md/proxy.md
+  - md/builder.md
+  - md/adapter.md
+- Робототехника и автономные системы:
+  - md/jump_point_search.md
+  - md/rnd.md
+  - md/sac_rnd.md
+  - md/astar.md
+  - md/bidirectional_a_star.md
+- Торговля и коммерция:
+  - md/fp_growth.md
+  - md/apriori_algorithm.md
+  - md/linucb.md
+  - md/uma.md
+  - md/amm.md
+  - md/deep_q_networks.md
+  - md/policy_gradient.md
+  - md/facade.md
+  - md/thompson_sampling.md
+  - md/arima.md
+- Экономика и финансы:
+  - md/uma.md
+  - md/amm.md
+  - md/equated_monthly_installments.md
+  - md/gbm.md
+  - md/logistic-regression.md
+  - md/linear-regression.md
+  - md/multidimensional_dp.md
+  - md/lasso-regression.md
+  - md/polynomial-regression.md
+  - md/elasticnet.md
+  - md/markov_chain.md
+  - md/1ddp.md
+  - md/arima.md
+  - md/ridge-regression.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
