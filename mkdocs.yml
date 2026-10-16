@@ -38,6 +38,7 @@ nav:
 - IoT и сетевые технологии:
   - md/batch_updates.md
   - md/even_tree.md
+  - md/state_machine.md
 - Аналитика данных и базы данных:
   - md/fp_growth.md
   - md/apriori_algorithm.md
@@ -49,6 +50,7 @@ nav:
   - md/cqrs.md
   - md/batch_updates.md
   - md/merkle_patricia_trie.md
+  - md/event_sourcing.md
 - Биотехнологии и медицинская информатика:
   - md/linucb.md
   - md/logistic-regression.md
@@ -71,6 +73,7 @@ nav:
   - md/astar.md
   - md/prototype.md
   - md/bidirectional_a_star.md
+  - md/state_machine.md
 - Логистика и управление цепочками:
   - md/jump_point_search.md
   - md/gbm.md
@@ -82,6 +85,7 @@ nav:
   - md/arima.md
   - md/bidirectional_a_star.md
   - md/ridge-regression.md
+  - md/saga_pattern.md
 - Машинное обучение и рекомендательные системы:
   - md/fp_growth.md
   - md/automatic_differentiation.md
@@ -113,6 +117,7 @@ nav:
   - md/flyweight.md
   - md/markov_chain.md
   - md/1ddp.md
+  - md/state_machine.md
 - Оптимизация и планирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -137,12 +142,15 @@ nav:
   - md/proxy.md
   - md/builder.md
   - md/adapter.md
+  - md/event_sourcing.md
+  - md/saga_pattern.md
 - Робототехника и автономные системы:
   - md/jump_point_search.md
   - md/rnd.md
   - md/sac_rnd.md
   - md/astar.md
   - md/bidirectional_a_star.md
+  - md/state_machine.md
 - Торговля и коммерция:
   - md/fp_growth.md
   - md/apriori_algorithm.md
@@ -154,6 +162,7 @@ nav:
   - md/facade.md
   - md/thompson_sampling.md
   - md/arima.md
+  - md/saga_pattern.md
 - Экономика и финансы:
   - md/uma.md
   - md/amm.md
@@ -169,6 +178,8 @@ nav:
   - md/1ddp.md
   - md/arima.md
   - md/ridge-regression.md
+  - md/event_sourcing.md
+  - md/saga_pattern.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
