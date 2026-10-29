@@ -78,6 +78,7 @@ nav:
   - md/bidirectional_a_star.md
   - md/state_machine.md
   - md/gans.md
+  - md/vae.md
 - Логистика и управление цепочками:
   - md/jump_point_search.md
   - md/gbm.md
@@ -117,9 +118,11 @@ nav:
   - md/transformers.md
   - md/gans.md
   - md/autoencoders.md
+  - md/vae.md
 - Научные вычисления и физическое моделирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
+  - md/vae.md
 - Обработка естественного языка:
   - md/moe.md
   - md/logistic-regression.md
