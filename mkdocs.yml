@@ -71,6 +71,7 @@ nav:
   - md/bidirectional_a_star.md
   - md/even_tree.md
   - md/johnson_algorithm.md
+  - md/pagerank.md
 - Игровая разработка:
   - md/jump_point_search.md
   - md/sac_rnd.md
@@ -140,6 +141,7 @@ nav:
   - md/rnn.md
   - md/transformers.md
   - md/autoencoders.md
+  - md/pagerank.md
 - Оптимизация и планирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -190,6 +192,7 @@ nav:
   - md/collaborative_filtering.md
   - md/svd.md
   - md/als.md
+  - md/pagerank.md
 - Экономика и финансы:
   - md/uma.md
   - md/amm.md
