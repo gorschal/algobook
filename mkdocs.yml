@@ -76,6 +76,7 @@ nav:
   - md/prototype.md
   - md/bidirectional_a_star.md
   - md/state_machine.md
+  - md/gans.md
 - Логистика и управление цепочками:
   - md/jump_point_search.md
   - md/gbm.md
@@ -113,6 +114,7 @@ nav:
   - md/cnn.md
   - md/rnn.md
   - md/transformers.md
+  - md/gans.md
 - Научные вычисления и физическое моделирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -189,6 +191,7 @@ nav:
   - md/event_sourcing.md
   - md/saga_pattern.md
   - md/rnn.md
+  - md/gans.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
