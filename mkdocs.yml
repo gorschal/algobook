@@ -119,6 +119,7 @@ nav:
   - md/gans.md
   - md/autoencoders.md
   - md/vae.md
+  - md/collaborative_filtering.md
 - Научные вычисления и физическое моделирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -179,6 +180,7 @@ nav:
   - md/arima.md
   - md/saga_pattern.md
   - md/cnn.md
+  - md/collaborative_filtering.md
 - Экономика и финансы:
   - md/uma.md
   - md/amm.md
@@ -198,6 +200,7 @@ nav:
   - md/saga_pattern.md
   - md/rnn.md
   - md/gans.md
+  - md/collaborative_filtering.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
