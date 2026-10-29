@@ -53,6 +53,7 @@ nav:
   - md/event_sourcing.md
   - md/svd.md
   - md/als.md
+  - md/black_litterman.md
 - Биотехнологии и медицинская информатика:
   - md/linucb.md
   - md/logistic-regression.md
@@ -162,6 +163,7 @@ nav:
   - md/hungarian_algorithm.md
   - md/tsp.md
   - md/markowitz.md
+  - md/black_litterman.md
 - Паттерны проектирования:
   - md/abstract_factory.md
   - md/decorator.md
@@ -225,6 +227,7 @@ nav:
   - md/gans.md
   - md/collaborative_filtering.md
   - md/markowitz.md
+  - md/black_litterman.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
