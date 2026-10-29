@@ -70,6 +70,7 @@ nav:
   - md/check_cycle.md
   - md/bidirectional_a_star.md
   - md/even_tree.md
+  - md/johnson_algorithm.md
 - Игровая разработка:
   - md/jump_point_search.md
   - md/sac_rnd.md
@@ -93,6 +94,7 @@ nav:
   - md/bidirectional_a_star.md
   - md/ridge-regression.md
   - md/saga_pattern.md
+  - md/johnson_algorithm.md
 - Машинное обучение и рекомендательные системы:
   - md/fp_growth.md
   - md/automatic_differentiation.md
@@ -147,6 +149,7 @@ nav:
   - md/batch_updates.md
   - md/merkle_patricia_trie.md
   - md/even_tree.md
+  - md/johnson_algorithm.md
 - Паттерны проектирования:
   - md/abstract_factory.md
   - md/decorator.md
