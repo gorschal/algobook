@@ -164,6 +164,7 @@ nav:
   - md/tsp.md
   - md/markowitz.md
   - md/black_litterman.md
+  - md/risk_parity.md
 - Паттерны проектирования:
   - md/abstract_factory.md
   - md/decorator.md
@@ -206,6 +207,7 @@ nav:
   - md/svd.md
   - md/als.md
   - md/pagerank.md
+  - md/risk_parity.md
 - Экономика и финансы:
   - md/uma.md
   - md/amm.md
@@ -228,6 +230,7 @@ nav:
   - md/collaborative_filtering.md
   - md/markowitz.md
   - md/black_litterman.md
+  - md/risk_parity.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
