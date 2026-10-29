@@ -60,6 +60,7 @@ nav:
   - md/1ddp.md
   - md/ridge-regression.md
   - md/cnn.md
+  - md/transformers.md
 - ГИС и картография:
   - md/jump_point_search.md
 - Графовые модели и социальные сети:
@@ -111,6 +112,7 @@ nav:
   - md/ridge-regression.md
   - md/cnn.md
   - md/rnn.md
+  - md/transformers.md
 - Научные вычисления и физическое моделирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -122,6 +124,7 @@ nav:
   - md/1ddp.md
   - md/state_machine.md
   - md/rnn.md
+  - md/transformers.md
 - Оптимизация и планирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
