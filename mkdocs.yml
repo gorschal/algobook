@@ -73,6 +73,7 @@ nav:
   - md/even_tree.md
   - md/johnson_algorithm.md
   - md/pagerank.md
+  - md/eulerian_path.md
 - Игровая разработка:
   - md/jump_point_search.md
   - md/sac_rnd.md
@@ -84,6 +85,7 @@ nav:
   - md/state_machine.md
   - md/gans.md
   - md/vae.md
+  - md/eulerian_path.md
 - Логистика и управление цепочками:
   - md/jump_point_search.md
   - md/gbm.md
@@ -99,6 +101,7 @@ nav:
   - md/johnson_algorithm.md
   - md/hungarian_algorithm.md
   - md/tsp.md
+  - md/eulerian_path.md
 - Машинное обучение и рекомендательные системы:
   - md/fp_growth.md
   - md/automatic_differentiation.md
