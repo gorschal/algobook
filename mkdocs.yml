@@ -51,6 +51,7 @@ nav:
   - md/batch_updates.md
   - md/merkle_patricia_trie.md
   - md/event_sourcing.md
+  - md/svd.md
 - Биотехнологии и медицинская информатика:
   - md/linucb.md
   - md/logistic-regression.md
@@ -120,6 +121,7 @@ nav:
   - md/autoencoders.md
   - md/vae.md
   - md/collaborative_filtering.md
+  - md/svd.md
 - Научные вычисления и физическое моделирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -181,6 +183,7 @@ nav:
   - md/saga_pattern.md
   - md/cnn.md
   - md/collaborative_filtering.md
+  - md/svd.md
 - Экономика и финансы:
   - md/uma.md
   - md/amm.md
