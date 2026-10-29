@@ -59,6 +59,7 @@ nav:
   - md/elasticnet.md
   - md/1ddp.md
   - md/ridge-regression.md
+  - md/cnn.md
 - ГИС и картография:
   - md/jump_point_search.md
 - Графовые модели и социальные сети:
@@ -108,6 +109,7 @@ nav:
   - md/batch_updates.md
   - md/1ddp.md
   - md/ridge-regression.md
+  - md/cnn.md
 - Научные вычисления и физическое моделирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -163,6 +165,7 @@ nav:
   - md/thompson_sampling.md
   - md/arima.md
   - md/saga_pattern.md
+  - md/cnn.md
 - Экономика и финансы:
   - md/uma.md
   - md/amm.md
