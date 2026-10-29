@@ -96,6 +96,7 @@ nav:
   - md/ridge-regression.md
   - md/saga_pattern.md
   - md/johnson_algorithm.md
+  - md/hungarian_algorithm.md
 - Машинное обучение и рекомендательные системы:
   - md/fp_growth.md
   - md/automatic_differentiation.md
@@ -152,6 +153,7 @@ nav:
   - md/merkle_patricia_trie.md
   - md/even_tree.md
   - md/johnson_algorithm.md
+  - md/hungarian_algorithm.md
 - Паттерны проектирования:
   - md/abstract_factory.md
   - md/decorator.md
@@ -176,6 +178,7 @@ nav:
   - md/astar.md
   - md/bidirectional_a_star.md
   - md/state_machine.md
+  - md/hungarian_algorithm.md
 - Торговля и коммерция:
   - md/fp_growth.md
   - md/apriori_algorithm.md
