@@ -64,6 +64,7 @@ nav:
   - md/cnn.md
   - md/transformers.md
   - md/autoencoders.md
+  - md/tsp.md
 - ГИС и картография:
   - md/jump_point_search.md
 - Графовые модели и социальные сети:
@@ -97,6 +98,7 @@ nav:
   - md/saga_pattern.md
   - md/johnson_algorithm.md
   - md/hungarian_algorithm.md
+  - md/tsp.md
 - Машинное обучение и рекомендательные системы:
   - md/fp_growth.md
   - md/automatic_differentiation.md
@@ -154,6 +156,7 @@ nav:
   - md/even_tree.md
   - md/johnson_algorithm.md
   - md/hungarian_algorithm.md
+  - md/tsp.md
 - Паттерны проектирования:
   - md/abstract_factory.md
   - md/decorator.md
