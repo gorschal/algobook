@@ -110,6 +110,7 @@ nav:
   - md/1ddp.md
   - md/ridge-regression.md
   - md/cnn.md
+  - md/rnn.md
 - Научные вычисления и физическое моделирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -120,6 +121,7 @@ nav:
   - md/markov_chain.md
   - md/1ddp.md
   - md/state_machine.md
+  - md/rnn.md
 - Оптимизация и планирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
@@ -183,6 +185,7 @@ nav:
   - md/ridge-regression.md
   - md/event_sourcing.md
   - md/saga_pattern.md
+  - md/rnn.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
