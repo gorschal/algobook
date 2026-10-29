@@ -87,6 +87,7 @@ nav:
   - md/gans.md
   - md/vae.md
   - md/eulerian_path.md
+  - md/monte_carlo_simulation.md
 - Логистика и управление цепочками:
   - md/jump_point_search.md
   - md/gbm.md
@@ -139,6 +140,7 @@ nav:
   - md/diophantine_equation.md
   - md/vae.md
   - md/markowitz.md
+  - md/monte_carlo_simulation.md
 - Обработка естественного языка:
   - md/moe.md
   - md/logistic-regression.md
@@ -231,6 +233,7 @@ nav:
   - md/markowitz.md
   - md/black_litterman.md
   - md/risk_parity.md
+  - md/monte_carlo_simulation.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
