@@ -135,12 +135,14 @@ nav:
   - md/collaborative_filtering.md
   - md/svd.md
   - md/als.md
+  - md/mamba.md
 - Научные вычисления и физическое моделирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
   - md/vae.md
   - md/markowitz.md
   - md/monte_carlo_simulation.md
+  - md/mamba.md
 - Обработка естественного языка:
   - md/moe.md
   - md/logistic-regression.md
@@ -152,6 +154,7 @@ nav:
   - md/transformers.md
   - md/autoencoders.md
   - md/pagerank.md
+  - md/mamba.md
 - Оптимизация и планирование:
   - md/automatic_differentiation.md
   - md/diophantine_equation.md
